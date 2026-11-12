@@ -319,6 +319,7 @@ function paintPicker(){
   });
   $('rv').textContent = cur.rating>0 ? fmt(cur.rating) : '–';
   $('bonusBtn').classList.toggle('on',!!cur.bonus);
+  $('bonusStar').innerHTML=`<span class="bg">${STAR}</span>`;
   $('bonusStar').className='st bonus'+(cur.bonus?' on':'');
 }
 
