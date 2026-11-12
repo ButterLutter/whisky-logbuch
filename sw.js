@@ -1,8 +1,15 @@
-const CACHE = 'whisky-logbuch-v1';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'whisky-logbuch-v2';
+const FILES = [
+  './', './index.html', './manifest.webmanifest', './icon.svg',
+  './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
+];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => Promise.all(FILES.map(f => c.add(new Request(f, { cache: 'reload' })))))
+      .then(() => self.skipWaiting())
+  );
 });
 self.addEventListener('activate', e => {
   e.waitUntil(
