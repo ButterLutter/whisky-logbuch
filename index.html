@@ -83,6 +83,22 @@ main{padding:12px 16px}
 menu{margin:0;padding:0}
 .addrow{display:flex;gap:6px;margin-top:8px;align-items:center}
 .addrow button{flex:none;padding:10px 12px}
+/* Reiter */
+.tabs{display:flex;gap:6px;margin-top:16px}
+.tab{flex:1;min-width:0;padding:10px 2px;border-radius:10px 10px 0 0;font-weight:600;font-size:14px;white-space:nowrap;text-align:center}
+.tab.on{background:var(--amber);color:#2a1a05;border-color:var(--amber)}
+.tab i{font-style:normal;font-size:11px;background:rgba(0,0,0,.28);color:var(--text);border-radius:999px;padding:1px 6px;margin-left:3px}
+.tab.on i{background:rgba(0,0,0,.18);color:#2a1a05}
+.tabpanel{border:1px solid var(--line);border-top:2px solid var(--amber);border-radius:0 0 12px 12px;padding:2px 12px 12px;margin-top:-1px;background:rgba(255,255,255,.015)}
+.ghead{width:100%;display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:10px;padding:9px 12px;margin-top:8px;text-align:left}
+.ghead i{font-style:normal;background:var(--amber);color:#2a1a05;border-radius:999px;padding:0 7px;font-size:12px;font-weight:700;margin-left:6px}
+.arr{color:var(--muted)}
+.sel{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sel .chip{padding:5px 10px;font-size:13px}
+.nrows{margin-top:8px}
+.nrow{display:grid;grid-template-columns:72px 1fr;align-items:baseline;gap:6px;margin-top:5px}
+.nrow small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.nrow .tags{margin-top:0}
 .hint{font-size:12px;color:var(--muted);margin-top:6px}
 </style>
 </head>
@@ -158,17 +174,33 @@ menu{margin:0;padding:0}
     </div>
     <div class="hint">Tippe links bzw. rechts in einen Stern für halbe bzw. ganze Punkte. Der rote Bonus-Stern hebt etwas Besonderes hervor.</div>
 
-    <label>Geschmack (antippen)</label>
-    <div id="flavorGroups"></div>
-    <div class="row" style="margin-top:10px">
-      <input id="f_custom" placeholder="Eigener Geschmack …" autocomplete="off">
-      <button type="button" id="addCustom">+</button>
+    <div class="tabs" id="tabs">
+      <button type="button" class="tab on" id="tab_nose" data-t="nose">Nase</button>
+      <button type="button" class="tab" id="tab_taste" data-t="taste">Geschmack</button>
+      <button type="button" class="tab" id="tab_finish" data-t="finish">Abgang</button>
     </div>
 
-    <label for="f_nose">Nase</label><textarea id="f_nose"></textarea>
-    <label for="f_palate">Gaumen</label><textarea id="f_palate"></textarea>
-    <label for="f_finish">Abgang</label><textarea id="f_finish"></textarea>
-    <label for="f_notes">Eigene Notizen</label><textarea id="f_notes" placeholder="Gesamteindruck, würde ich nachkaufen?, Preis …"></textarea>
+    <div class="tabpanel" data-t="nose">
+      <div id="notes_nose"></div>
+      <div class="addrow"><input id="an_nose" maxlength="30" placeholder="Eigene Note …" autocomplete="off"><button type="button" id="addnote_nose" aria-label="Note hinzufügen">＋</button></div>
+      <label for="f_nose">Notizen zur Nase</label>
+      <textarea id="f_nose"></textarea>
+    </div>
+    <div class="tabpanel" data-t="taste" hidden>
+      <div id="notes_taste"></div>
+      <div class="addrow"><input id="an_taste" maxlength="30" placeholder="Eigene Note …" autocomplete="off"><button type="button" id="addnote_taste" aria-label="Note hinzufügen">＋</button></div>
+      <label for="f_taste">Notizen zum Geschmack</label>
+      <textarea id="f_taste"></textarea>
+    </div>
+    <div class="tabpanel" data-t="finish" hidden>
+      <div id="notes_finish"></div>
+      <div class="addrow"><input id="an_finish" maxlength="30" placeholder="Eigene Note …" autocomplete="off"><button type="button" id="addnote_finish" aria-label="Note hinzufügen">＋</button></div>
+      <label for="f_finish">Notizen zum Abgang</label>
+      <textarea id="f_finish"></textarea>
+    </div>
+
+    <label for="f_notes">Gesamteindruck / eigene Notizen</label>
+    <textarea id="f_notes" placeholder="Würde ich nachkaufen?, Preis …"></textarea>
   </main>
   <div class="bar"><button class="primary" id="fSave">Speichern</button></div>
 </div>
@@ -190,9 +222,17 @@ const FLAVORS = {
   'Meer & Küste':['Salzig','Jod','Seetang','Meeresbrise','Austernschale'],
   'Sonstiges':  ['Malz','Getreide','Blumig','Kräuter','Sherry','Ölig','Scharf']
 };
+const TABS = [
+  {k:'nose',   label:'Nase',      txt:'nose',   notes:'noseNotes'},
+  {k:'taste',  label:'Geschmack', txt:'taste',  notes:'tasteNotes'},
+  {k:'finish', label:'Abgang',    txt:'finish', notes:'finishNotes'}
+];
 const ALL_DEFAULT = Object.values(FLAVORS).flat();
 
-let entries = load();
+const L0 = load();
+let entries = L0.d;
+let addedNow = new Set();   // in dieser Formular-Sitzung neu angelegte Noten
+let openG = {nose:new Set(),taste:new Set(),finish:new Set()};
 let cur = null;           // aktueller Formular-Zustand
 let detailId = null;
 
@@ -203,7 +243,29 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDate(s){ if(!s) return ''; const p=s.split('-'); return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:s; }
 
-function load(){ try{ const d=JSON.parse(localStorage.getItem(KEY)); return Array.isArray(d)?d:[]; }catch(e){ return []; } }
+/* Alte Einträge übernehmen: Gaumen -> Geschmack, bisherige Geschmacks-Auswahl -> Geschmacksnoten */
+function normalizeEntry(e){
+  let ch=false;
+  if(e.palate!==undefined){
+    if(e.palate) e.taste = e.taste ? e.taste+'\n'+e.palate : e.palate;
+    delete e.palate; ch=true;
+  }
+  if(e.flavors!==undefined){
+    if(!Array.isArray(e.tasteNotes)) e.tasteNotes=[];
+    (Array.isArray(e.flavors)?e.flavors:[]).forEach(f=>{ if(typeof f==='string' && !e.tasteNotes.includes(f)) e.tasteNotes.push(f); });
+    delete e.flavors; ch=true;
+  }
+  TABS.forEach(t=>{ e[t.notes]=Array.isArray(e[t.notes]) ? e[t.notes].filter(x=>typeof x==='string') : []; });
+  return ch;
+}
+function load(){
+  let raw=null; try{ raw=localStorage.getItem(KEY); }catch(e){}
+  let d=[]; try{ const p=JSON.parse(raw); if(Array.isArray(p)) d=p.filter(x=>x&&typeof x==='object'); }catch(e){}
+  const needs=d.some(e=>e.palate!==undefined||e.flavors!==undefined);
+  if(needs && raw){ try{ if(!localStorage.getItem(KEY+'-backup-vor-update')) localStorage.setItem(KEY+'-backup-vor-update',raw); }catch(e){} }
+  let ch=false; d.forEach(e=>{ if(normalizeEntry(e)) ch=true; });
+  return {d,ch};
+}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(entries)); return true; }catch(e){ toast('Speichern fehlgeschlagen!'); return false; } }
 try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 
@@ -260,46 +322,76 @@ function paintPicker(){
   $('bonusStar').className='st bonus'+(cur.bonus?' on':'');
 }
 
-/* ---------- Geschmacks-Chips ---------- */
+/* ---------- Noten (Nase / Geschmack / Abgang, gemeinsame Liste) ---------- */
 function customTags(){
   const set=new Set();
-  entries.forEach(e=>(e.flavors||[]).forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); }));
-  (cur?cur.flavors:[]).forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); });
+  entries.forEach(e=>TABS.forEach(t=>(e[t.notes]||[]).forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); })));
+  if(cur) TABS.forEach(t=>(cur[t.notes]||[]).forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); }));
+  addedNow.forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); });
   return [...set].sort((a,b)=>a.localeCompare(b,'de'));
 }
-function buildFlavors(){
-  let h='';
-  const groups = {...FLAVORS}; const c=customTags(); if(c.length) groups['Eigene']=c;
+function chipHTML(f,on){ return `<button type="button" class="chip ${on?'on':''}" data-n="${esc(f)}">${esc(f)}</button>`; }
+function renderNotes(t){
+  const box=$('notes_'+t.k), sel=cur[t.notes];
+  const groups={...FLAVORS}; const c=customTags(); if(c.length) groups['Eigene']=c;
+  let h = sel.length
+    ? `<div class="sel">${sel.map(f=>chipHTML(f,true)).join('')}</div>`
+    : `<div class="hint">Gruppe antippen, um Noten auszuwählen.</div>`;
   for(const [g,list] of Object.entries(groups)){
-    h+=`<div class="group"><b>${esc(g)}</b><div class="chips">`+
-      list.map(f=>`<button type="button" class="chip ${cur.flavors.includes(f)?'on':''}" data-f="${esc(f)}">${esc(f)}</button>`).join('')+
-      `</div></div>`;
+    const cnt=list.filter(f=>sel.includes(f)).length, open=openG[t.k].has(g);
+    h+=`<button type="button" class="ghead" data-g="${esc(g)}"><span>${esc(g)}${cnt?`<i>${cnt}</i>`:''}</span><span class="arr">${open?'▴':'▾'}</span></button>`;
+    if(open) h+=`<div class="chips">${list.map(f=>chipHTML(f,sel.includes(f))).join('')}</div>`;
   }
-  $('flavorGroups').innerHTML=h;
+  box.innerHTML=h;
 }
-$('flavorGroups').addEventListener('click',ev=>{
-  const b=ev.target.closest('.chip'); if(!b) return;
-  const f=b.dataset.f, i=cur.flavors.indexOf(f);
-  if(i>=0) cur.flavors.splice(i,1); else cur.flavors.push(f);
-  b.classList.toggle('on');
-});
-function addCustom(){
-  const v=$('f_custom').value.trim(); if(!v) return;
+function updateBadges(){
+  TABS.forEach(t=>{ const n=cur[t.notes].length; $('tab_'+t.k).innerHTML=esc(t.label)+(n?` <i>${n}</i>`:''); });
+}
+function renderAllNotes(){ TABS.forEach(renderNotes); updateBadges(); }
+function setTab(k){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===k));
+  document.querySelectorAll('.tabpanel').forEach(p=>{ p.hidden = p.dataset.t!==k; });
+}
+$('tabs').addEventListener('click',ev=>{ const b=ev.target.closest('.tab'); if(b) setTab(b.dataset.t); });
+function addNote(t){
+  const inp=$('an_'+t.k), v=inp.value.trim().replace(/\s+/g,' '); if(!v) return;
   const exist=[...ALL_DEFAULT,...customTags()].find(x=>x.toLowerCase()===v.toLowerCase());
   const name=exist||v;
-  if(!cur.flavors.includes(name)) cur.flavors.push(name);
-  $('f_custom').value=''; buildFlavors();
+  addedNow.add(name);
+  if(!cur[t.notes].includes(name)) cur[t.notes].push(name);
+  inp.value=''; renderAllNotes();
 }
-$('addCustom').onclick=addCustom;
-$('f_custom').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addCustom(); }});
+TABS.forEach(t=>{
+  $('notes_'+t.k).addEventListener('click',ev=>{
+    const b=ev.target.closest('button'); if(!b) return;
+    if(b.dataset.n!==undefined){
+      const a=cur[t.notes], i=a.indexOf(b.dataset.n);
+      if(i>=0) a.splice(i,1); else a.push(b.dataset.n);
+      renderNotes(t); updateBadges();
+    } else if(b.dataset.g!==undefined){
+      const g=openG[t.k]; if(g.has(b.dataset.g)) g.delete(b.dataset.g); else g.add(b.dataset.g);
+      renderNotes(t);
+    }
+  });
+  $('addnote_'+t.k).onclick=()=>addNote(t);
+  $('an_'+t.k).addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addNote(t); }});
+});
 
 /* ---------- Liste ---------- */
+function noteRows(e){
+  let h='';
+  TABS.forEach(t=>{
+    const a=e[t.notes]||[]; if(!a.length) return;
+    h+=`<div class="nrow"><small>${t.label}</small><div class="tags">${a.slice(0,4).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}${a.length>4?`<span class="tag">+${a.length-4}</span>`:''}</div></div>`;
+  });
+  return h?`<div class="nrows">${h}</div>`:'';
+}
 function renderList(){
   const q=$('q').value.trim().toLowerCase(), sort=$('sort').value;
   let arr=entries.filter(e=>{
     if(!q) return true;
-    return [e.name,e.distillery,e.region,e.type,e.year,e.place,e.nose,e.palate,e.finish,e.notes,(e.flavors||[]).join(' ')]
-      .join(' ').toLowerCase().includes(q);
+    return [e.name,e.distillery,e.region,e.type,e.year,e.place,e.nose,e.taste,e.finish,e.notes,
+      ...TABS.map(t=>(e[t.notes]||[]).join(' '))].join(' ').toLowerCase().includes(q);
   });
   const score=e=>(e.rating||0)+(e.bonus?0.25:0);
   arr.sort((a,b)=>{
@@ -319,7 +411,7 @@ function renderList(){
     const meta=[e.distillery,e.region,e.year?('Jg. '+e.year):'',e.age?(e.age+' J.'):''].filter(Boolean).join(' · ');
     return `<div class="card" data-id="${e.id}">
       <div class="cardtop"><div><h3>${esc(e.name)}</h3><div class="sub">${esc(meta)||'&nbsp;'}</div></div>${ratingHTML(e,15)}</div>
-      ${(e.flavors&&e.flavors.length)?`<div class="tags">${e.flavors.slice(0,6).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}${e.flavors.length>6?`<span class="tag">+${e.flavors.length-6}</span>`:''}</div>`:''}
+      ${noteRows(e)}
       <div class="sub" style="margin-top:8px">${esc(fmtDate(e.date))}${e.place?' · '+esc(e.place):''}</div>
     </div>`;
   }).join('');
@@ -329,6 +421,13 @@ $('q').addEventListener('input',renderList);
 $('sort').addEventListener('change',renderList);
 
 /* ---------- Detail ---------- */
+function tabSections(e){
+  return TABS.map(t=>{
+    const a=e[t.notes]||[], txt=e[t.txt];
+    if(!a.length && !txt) return '';
+    return `<div class="dl"><b>${t.label}</b>${a.length?`<div class="tags" style="margin-top:4px">${a.map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div>`:''}${txt?`<p style="margin-top:6px">${esc(txt)}</p>`:''}</div>`;
+  }).join('');
+}
 function openDetail(id){
   const e=entries.find(x=>x.id===id); if(!e) return;
   detailId=id;
@@ -338,8 +437,7 @@ function openDetail(id){
   $('detail').innerHTML=`<h2>${esc(e.name)}</h2>
     <div style="margin-top:10px">${ratingHTML(e,26)}</div>
     <div class="meta">${meta.map(m=>`<div><small>${m[0]}</small>${esc(m[1])}</div>`).join('')}</div>
-    ${(e.flavors&&e.flavors.length)?`<div class="dl"><b>Geschmack</b><div class="tags" style="margin-top:4px">${e.flavors.map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div></div>`:''}
-    ${sec('Nase',e.nose)}${sec('Gaumen',e.palate)}${sec('Abgang',e.finish)}${sec('Notizen',e.notes)}`;
+    ${tabSections(e)}${sec('Gesamteindruck / Notizen',e.notes)}`;
   show('vDetail');
 }
 $('dBack').onclick=()=>{ show('vList'); };
@@ -386,15 +484,17 @@ $('addRegion').onclick=addRegion;
 $('f_newRegion').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addRegion(); }});
 
 /* ---------- Formular ---------- */
-const FIELDS={name:'f_name',distillery:'f_dist',region:'f_region',type:'f_type',abv:'f_abv',year:'f_year',age:'f_age',date:'f_date',place:'f_place',nose:'f_nose',palate:'f_palate',finish:'f_finish',notes:'f_notes'};
+const FIELDS={name:'f_name',distillery:'f_dist',region:'f_region',type:'f_type',abv:'f_abv',year:'f_year',age:'f_age',date:'f_date',place:'f_place',nose:'f_nose',taste:'f_taste',finish:'f_finish',notes:'f_notes'};
 function openForm(id){
   const e = id ? entries.find(x=>x.id===id) : null;
-  cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,rating:0,bonus:false,flavors:[],date:today()};
-  cur.flavors=cur.flavors||[]; cur.rating=cur.rating||0;
+  cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,rating:0,bonus:false,date:today()};
+  cur.rating=cur.rating||0;
+  TABS.forEach(t=>{ if(!Array.isArray(cur[t.notes])) cur[t.notes]=[]; });
   buildRegionSelect(cur.region||''); $('newRegionRow').hidden=true; $('f_newRegion').value='';
   for(const [k,el] of Object.entries(FIELDS)) $(el).value = cur[k]==null?'':cur[k];
   $('fTitle').textContent = e?'Eintrag bearbeiten':'Neuer Eintrag';
-  buildStarPicker(); paintPicker(); buildFlavors();
+  addedNow=new Set(); openG={nose:new Set(),taste:new Set(),finish:new Set()};
+  buildStarPicker(); paintPicker(); renderAllNotes(); setTab('nose');
   show('vForm');
   if(!e) setTimeout(()=>$('f_name').focus(),50);
 }
@@ -408,6 +508,7 @@ $('fSave').onclick=()=>{
   const o={...cur};
   for(const [k,el] of Object.entries(FIELDS)) o[k]=$(el).value.trim();
   o.abv=o.abv.replace(',','.');
+  delete o.palate; delete o.flavors;
   if(o.region==='__new__'){
     o.region=$('f_newRegion').value.trim().replace(/\s+/g,' ');
     if(o.region && !KNOWN_REGIONS.has(o.region) && !customRegions.includes(o.region)){ customRegions.push(o.region); saveRegions(); }
@@ -424,7 +525,7 @@ $('btnMenu').onclick=()=>{
   if(confirm('Backup aus Datei wiederherstellen (Import)?\nBestehende Einträge bleiben erhalten, neue werden ergänzt.')) $('importFile').click();
 };
 function exportData(){
-  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:1,exported:new Date().toISOString(),entries},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:2,exported:new Date().toISOString(),entries},null,2)],{type:'application/json'});
   const name=`whisky-logbuch-${today()}.json`;
   try{
     const f=new File([blob],name,{type:'application/json'});
@@ -441,7 +542,12 @@ $('importFile').addEventListener('change',ev=>{
       const d=JSON.parse(r.result); const arr=Array.isArray(d)?d:d.entries;
       if(!Array.isArray(arr)) throw 0;
       const have=new Set(entries.map(e=>e.id)); let n=0;
-      arr.forEach(e=>{ if(e && e.name){ if(!e.id||have.has(e.id)) e.id=have.has(e.id)?e.id:uid(); if(!have.has(e.id)){ entries.push(e); have.add(e.id); n++; } } });
+      arr.forEach(e=>{
+        if(!e || typeof e!=='object' || !e.name) return;
+        if(!e.id) e.id=uid();
+        if(have.has(e.id)) return;
+        normalizeEntry(e); entries.push(e); have.add(e.id); n++;
+      });
       save(); renderList(); toast(n+' Einträge importiert');
     }catch(e){ toast('Datei konnte nicht gelesen werden'); }
     ev.target.value='';
@@ -459,6 +565,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
+if(L0.ch) save();
 renderList();
 })();
 </script>
