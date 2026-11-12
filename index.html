@@ -24,10 +24,11 @@ body{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
 header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(12px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line)}
 h1{margin:0 0 10px;font-size:22px;letter-spacing:.3px}
 h1 span{color:var(--amber)}
+h3{margin:0}
 .row{display:flex;gap:8px;align-items:center}
 input,select,textarea{width:100%;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--amber)}
-textarea{min-height:76px;resize:vertical}
+textarea{min-height:64px;resize:vertical}
 label{display:block;font-size:13px;color:var(--muted);margin:14px 0 5px}
 button{font:inherit;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
 button.primary{background:var(--amber);color:#2a1a05;border-color:var(--amber);font-weight:700}
@@ -39,11 +40,10 @@ main{padding:12px 16px}
 .card h3{margin:0 0 2px;font-size:17px}
 .sub{color:var(--muted);font-size:13px}
 .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
-.tag{font-size:12px;background:var(--card2);border:1px solid var(--line);color:var(--muted);padding:2px 8px;border-radius:999px}
+.tag{font-size:12px;background:var(--card2);border:1px solid var(--line);color:var(--text);padding:2px 8px;border-radius:999px}
 .empty{text-align:center;color:var(--muted);padding:60px 20px;line-height:1.6}
 .fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;font-size:32px;line-height:1;padding:0;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid2>div>label{margin-top:14px}
 /* Sterne */
 .stars{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}
 .st{position:relative;display:inline-block;width:var(--s,18px);height:var(--s,18px)}
@@ -63,26 +63,15 @@ main{padding:12px 16px}
 .rating{white-space:nowrap;text-align:right}
 .rating .num{font-size:13px;color:var(--amber);font-weight:700;display:block;margin-top:2px}
 .rating .num.b{color:var(--bonus)}
-/* Chips */
-.group{margin-top:10px}
-.group b{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px}
-.chips{display:flex;flex-wrap:wrap;gap:7px}
-.chip{border-radius:999px;padding:7px 13px;font-size:14px;background:var(--card);}
+/* Noten-Chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{border-radius:999px;padding:7px 12px;font-size:14px;background:var(--card)}
 .chip.on{background:var(--amber);color:#2a1a05;border-color:var(--amber);font-weight:600}
-.view{display:none}.view.active{display:block}
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:6}
-.bar button{flex:1}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));background:#000d;color:#fff;padding:10px 16px;border-radius:999px;z-index:20;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none}
-.toast.show{opacity:1}
-.detail h2{margin:0}
-.dl{margin-top:16px}
-.dl b{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
-.dl p{margin:0;white-space:pre-wrap;line-height:1.5}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:14px}
-.meta div{font-size:14px}.meta small{display:block;color:var(--muted);font-size:12px}
-menu{margin:0;padding:0}
-.addrow{display:flex;gap:6px;margin-top:8px;align-items:center}
-.addrow button{flex:none;padding:10px 12px}
+.chip .em{margin-right:5px}
+.chip.add{color:var(--amber);border-style:dashed;padding:7px 14px}
+.sel{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sel .chip{padding:5px 10px;font-size:13px}
+.hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
 /* Reiter */
 .tabs{display:flex;gap:6px;margin-top:16px}
 .tab{flex:1;min-width:0;padding:10px 2px;border-radius:10px 10px 0 0;font-weight:600;font-size:14px;white-space:nowrap;text-align:center}
@@ -93,13 +82,40 @@ menu{margin:0;padding:0}
 .ghead{width:100%;display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:10px;padding:9px 12px;margin-top:8px;text-align:left}
 .ghead i{font-style:normal;background:var(--amber);color:#2a1a05;border-radius:999px;padding:0 7px;font-size:12px;font-weight:700;margin-left:6px}
 .arr{color:var(--muted)}
-.sel{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.sel .chip{padding:5px 10px;font-size:13px}
+.addrow{display:flex;gap:6px;margin-top:8px;align-items:center}
+.addrow .ae{width:68px;flex:none;text-align:center}
+.addrow button{flex:none;padding:10px 12px}
+/* Liste: Noten-Symbole */
 .nrows{margin-top:8px}
-.nrow{display:grid;grid-template-columns:72px 1fr;align-items:baseline;gap:6px;margin-top:5px}
-.nrow small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
-.nrow .tags{margin-top:0}
-.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.nrow{display:grid;grid-template-columns:74px 1fr;align-items:start;gap:6px;margin-top:4px}
+.nrow small{color:var(--muted);font-size:12px;padding-top:3px}
+.ni{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.ic{font-size:18px;line-height:1.2}
+.ic.tx{font-size:11px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--text)}
+.more{font-size:12px;color:var(--muted)}
+.view{display:none}.view.active{display:block}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:6}
+.bar button{flex:1}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));background:#000d;color:#fff;padding:10px 16px;border-radius:999px;z-index:40;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.detail h2{margin:0}
+.dl{margin-top:16px}
+.dl b{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.dl p{margin:0;white-space:pre-wrap;line-height:1.5}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:14px}
+.meta div{font-size:14px}.meta small{display:block;color:var(--muted);font-size:12px}
+/* Menü-Sheet */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:flex;align-items:flex-end}
+.sheetbox{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.sheetbox button{padding:14px}
+/* Verwaltung */
+.mgroup{margin-top:18px}
+.mgroup>b{display:block;color:var(--amber);font-size:13px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.mrow.dim .mn{opacity:.45;text-decoration:line-through}
+.mrow button{padding:6px 10px;font-size:14px;flex:none}
+.mrow select{width:auto;padding:6px 8px;font-size:14px;flex:none;max-width:42vw}
+.mn{flex:1;min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -108,7 +124,7 @@ menu{margin:0;padding:0}
 <div id="vList" class="view active">
   <header>
     <h1>🥃 Whisky<span>-Logbuch</span></h1>
-    <div class="row"><input id="q" type="search" placeholder="Suchen (Name, Destillerie, Geschmack…)"></div>
+    <div class="row"><input id="q" type="search" placeholder="Suchen (Name, Destillerie, Note …)"></div>
     <div class="row" style="margin-top:8px">
       <select id="sort">
         <option value="date">Neueste Verkostung zuerst</option>
@@ -116,7 +132,7 @@ menu{margin:0;padding:0}
         <option value="name">Name A–Z</option>
         <option value="year">Jahrgang</option>
       </select>
-      <button id="btnMenu" class="ghost" aria-label="Backup">⋯</button>
+      <button id="btnMenu" class="ghost" aria-label="Menü">⋯</button>
     </div>
   </header>
   <main id="list"></main>
@@ -146,6 +162,7 @@ menu{margin:0;padding:0}
       <input id="f_newRegion" placeholder="Eigene Region …" autocomplete="off">
       <button type="button" id="addRegion">Hinzufügen</button>
     </div>
+
     <div class="grid2">
       <div><label for="f_type">Art</label>
         <select id="f_type">
@@ -181,20 +198,17 @@ menu{margin:0;padding:0}
     </div>
 
     <div class="tabpanel" data-t="nose">
-      <div id="notes_nose"></div>
-      <div class="addrow"><input id="an_nose" maxlength="30" placeholder="Eigene Note …" autocomplete="off"><button type="button" id="addnote_nose" aria-label="Note hinzufügen">＋</button></div>
+      <div class="notesbox" id="notes_nose"></div>
       <label for="f_nose">Notizen zur Nase</label>
       <textarea id="f_nose"></textarea>
     </div>
     <div class="tabpanel" data-t="taste" hidden>
-      <div id="notes_taste"></div>
-      <div class="addrow"><input id="an_taste" maxlength="30" placeholder="Eigene Note …" autocomplete="off"><button type="button" id="addnote_taste" aria-label="Note hinzufügen">＋</button></div>
+      <div class="notesbox" id="notes_taste"></div>
       <label for="f_taste">Notizen zum Geschmack</label>
       <textarea id="f_taste"></textarea>
     </div>
     <div class="tabpanel" data-t="finish" hidden>
-      <div id="notes_finish"></div>
-      <div class="addrow"><input id="an_finish" maxlength="30" placeholder="Eigene Note …" autocomplete="off"><button type="button" id="addnote_finish" aria-label="Note hinzufügen">＋</button></div>
+      <div class="notesbox" id="notes_finish"></div>
       <label for="f_finish">Notizen zum Abgang</label>
       <textarea id="f_finish"></textarea>
     </div>
@@ -205,6 +219,22 @@ menu{margin:0;padding:0}
   <div class="bar"><button class="primary" id="fSave">Speichern</button></div>
 </div>
 
+<!-- VERWALTUNG -->
+<div id="vManage" class="view">
+  <header><div class="row"><button class="ghost" id="mBack">← Zurück</button><b style="margin-left:auto">Noten &amp; Regionen</b></div></header>
+  <main id="manage"></main>
+</div>
+
+<!-- MENÜ -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheetbox">
+    <button id="mManage">Noten &amp; Regionen verwalten</button>
+    <button id="mExport">Backup exportieren</button>
+    <button id="mImport">Backup importieren</button>
+    <button id="mClose" class="ghost">Schließen</button>
+  </div>
+</div>
+
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <div class="toast" id="toast"></div>
 
@@ -212,29 +242,30 @@ menu{margin:0;padding:0}
 (function(){
 'use strict';
 
-const KEY = 'whisky-logbuch-v1';
-const FLAVORS = {
-  'Süß':        ['Vanille','Karamell','Honig','Toffee','Schokolade'],
-  'Fruchtig':   ['Apfel','Birne','Zitrus','Trockenfrüchte','Rosinen','Kirsche','Tropisch'],
-  'Würzig':     ['Pfeffer','Zimt','Nelke','Ingwer','Muskat'],
-  'Holz & Röst':['Eiche','Nuss','Kaffee','Tabak','Leder','Toast'],
-  'Rauch & Torf':['Rauch','Torf','Lagerfeuer','Holzkohle','Asche','Speck','Räucherschinken','Räucherfisch','Teer','Grill/BBQ','Kaminfeuer','Medizinisch'],
-  'Meer & Küste':['Salzig','Jod','Seetang','Meeresbrise','Austernschale'],
-  'Sonstiges':  ['Malz','Getreide','Blumig','Kräuter','Sherry','Ölig','Scharf']
+const KEY  = 'whisky-logbuch-v1';
+const SKEY = 'whisky-logbuch-settings-v1';
+
+/* ---------- Mitgelieferte Noten (gemeinsame Liste für Nase, Geschmack, Abgang) ---------- */
+const GROUPS = ['Süß','Fruchtig','Würzig','Holz & Röst','Rauch & Torf','Meer & Küste','Sonstiges'];
+const BASE = {
+  'Süß':          [['Vanille','🍦'],['Karamell','🍮'],['Honig','🍯'],['Toffee','🍬'],['Schokolade','🍫']],
+  'Fruchtig':     [['Apfel','🍎'],['Birne','🍐'],['Zitrus','🍋'],['Trockenfrüchte',''],['Rosinen','🍇'],['Kirsche','🍒'],['Tropisch','🍍']],
+  'Würzig':       [['Pfeffer',''],['Zimt',''],['Nelke',''],['Ingwer',''],['Muskat','']],
+  'Holz & Röst':  [['Eiche','🌳'],['Nuss','🥜'],['Kaffee','☕'],['Tabak',''],['Leder',''],['Toast','🍞']],
+  'Rauch & Torf': [['Rauch','💨'],['Torf',''],['Lagerfeuer','🔥'],['Holzkohle',''],['Asche','🌫️'],['Speck','🥓'],['Räucherschinken','🍖'],['Räucherfisch','🐟'],['Teer',''],['Grill/BBQ','🍗'],['Kaminfeuer',''],['Medizinisch','🩹']],
+  'Meer & Küste': [['Salzig','🧂'],['Jod',''],['Seetang',''],['Meeresbrise','🌊'],['Austernschale','🦪']],
+  'Sonstiges':    [['Malz',''],['Getreide','🌾'],['Blumig','🌸'],['Kräuter','🌿'],['Sherry','🍷'],['Ölig','💧'],['Scharf','']]
 };
 const TABS = [
   {k:'nose',   label:'Nase',      txt:'nose',   notes:'noseNotes'},
   {k:'taste',  label:'Geschmack', txt:'taste',  notes:'tasteNotes'},
   {k:'finish', label:'Abgang',    txt:'finish', notes:'finishNotes'}
 ];
-const ALL_DEFAULT = Object.values(FLAVORS).flat();
 
-const L0 = load();
-let entries = L0.d;
-let addedNow = new Set();   // in dieser Formular-Sitzung neu angelegte Noten
-let openG = {nose:new Set(),taste:new Set(),finish:new Set()};
-let cur = null;           // aktueller Formular-Zustand
-let detailId = null;
+/* ---------- Regionen ---------- */
+const REG_SCOT = [['Speyside','Speyside'],['Highlands','Highlands'],['Lowlands','Lowlands'],['Islay','Islay'],['Campbeltown','Campbeltown'],['Schottische Inseln','Inseln (Skye, Jura, Mull, Orkney …)']];
+const REG_OTHER = ['Irland','USA – Kentucky','USA – Tennessee','USA – Sonstige','Kanada','Japan','Taiwan','Indien','Frankreich','Deutschland','Österreich','Schweiz','Schweden','Australien'].map(x=>[x,x]);
+const KNOWN_REGIONS = new Set([...REG_SCOT,...REG_OTHER].map(r=>r[0]));
 
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -242,8 +273,24 @@ function fmt(v){ return String(v).replace('.',','); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDate(s){ if(!s) return ''; const p=s.split('-'); return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:s; }
+function short(n){ return n.length>9 ? n.slice(0,8)+'.' : n; }
+let tt; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2600); }
 
-/* Alte Einträge übernehmen: Gaumen -> Geschmack, bisherige Geschmacks-Auswahl -> Geschmacksnoten */
+/* ---------- Speicher ---------- */
+function loadSettings(){
+  let s=null; try{ s=JSON.parse(localStorage.getItem(SKEY)); }catch(e){}
+  s = s && typeof s==='object' ? s : {};
+  return {
+    hidden:  Array.isArray(s.hidden)  ? s.hidden.filter(x=>typeof x==='string') : [],
+    custom:  Array.isArray(s.custom)  ? s.custom.filter(c=>c && typeof c.name==='string' && c.name) : [],
+    regions: Array.isArray(s.regions) ? s.regions.filter(x=>typeof x==='string' && x) : []
+  };
+}
+function saveSettings(){ try{ localStorage.setItem(SKEY, JSON.stringify(S)); return true; }catch(e){ toast('Speichern fehlgeschlagen!'); return false; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(entries)); return true; }catch(e){ toast('Speichern fehlgeschlagen!'); return false; } }
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+
+/* Alte Einträge ins neue Format übernehmen: Gaumen -> Geschmack, Geschmacks-Auswahl -> Geschmacksnoten */
 function normalizeEntry(e){
   let ch=false;
   if(e.palate!==undefined){
@@ -252,10 +299,10 @@ function normalizeEntry(e){
   }
   if(e.flavors!==undefined){
     if(!Array.isArray(e.tasteNotes)) e.tasteNotes=[];
-    (Array.isArray(e.flavors)?e.flavors:[]).forEach(f=>{ if(typeof f==='string' && !e.tasteNotes.includes(f)) e.tasteNotes.push(f); });
+    (Array.isArray(e.flavors)?e.flavors:[]).forEach(f=>{ if(!e.tasteNotes.includes(f)) e.tasteNotes.push(f); });
     delete e.flavors; ch=true;
   }
-  TABS.forEach(t=>{ e[t.notes]=Array.isArray(e[t.notes]) ? e[t.notes].filter(x=>typeof x==='string') : []; });
+  TABS.forEach(t=>{ if(!Array.isArray(e[t.notes])) e[t.notes]=[]; else e[t.notes]=e[t.notes].filter(x=>typeof x==='string'); });
   return ch;
 }
 function load(){
@@ -266,10 +313,41 @@ function load(){
   let ch=false; d.forEach(e=>{ if(normalizeEntry(e)) ch=true; });
   return {d,ch};
 }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(entries)); return true; }catch(e){ toast('Speichern fehlgeschlagen!'); return false; } }
-try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 
-let tt; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
+let S = loadSettings();
+const L0 = load();
+let entries = L0.d;
+let cur = null, detailId = null, curTab = 'nose';
+let openG = {nose:new Set(),taste:new Set(),finish:new Set()};
+let addOpen = null;
+
+/* ---------- Noten-Katalog ---------- */
+function noteMap(){
+  const m=new Map();
+  GROUPS.forEach(g=>BASE[g].forEach(([n,e])=>m.set(n,{name:n,emoji:e,group:g,builtin:true,hidden:S.hidden.includes(n)})));
+  S.custom.forEach(c=>{ if(!m.has(c.name)) m.set(c.name,{name:c.name,emoji:c.emoji||'',group:GROUPS.includes(c.group)?c.group:'Sonstiges',builtin:false,hidden:false}); });
+  return m;
+}
+function ensureNotesKnown(){
+  const map=noteMap(); let ch=false;
+  entries.forEach(e=>TABS.forEach(t=>(e[t.notes]||[]).forEach(n=>{
+    if(!map.has(n)){ S.custom.push({name:n,emoji:'',group:'Sonstiges'}); map.set(n,{}); ch=true; }
+  })));
+  if(ch) saveSettings();
+  return ch;
+}
+if(ensureNotesKnown() || L0.ch) save();
+
+function firstGlyph(s){
+  s=(s||'').trim(); if(!s) return '';
+  let g='';
+  try{
+    if(window.Intl && Intl.Segmenter){ const it=new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(s)[Symbol.iterator]().next(); g=it.value?it.value.segment:''; }
+    else g=Array.from(s)[0]||'';
+  }catch(e){ g=Array.from(s)[0]||''; }
+  try{ if(!/\p{Extended_Pictographic}/u.test(g)) return ''; }catch(e){}
+  return g;
+}
 
 function show(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
@@ -296,7 +374,6 @@ function ratingHTML(e, size){
   const txt = has ? fmt(e.rating)+' / 5' : (e.bonus?'':'unbewertet');
   return `<span class="rating">${h}<span class="num ${e.bonus?'b':''}">${txt}${e.bonus?(has?' + Bonus':'Bonus'):''}</span></span>`;
 }
-
 function buildStarPicker(){
   const box=$('starPick'); box.innerHTML='';
   for(let i=0;i<5;i++){
@@ -323,67 +400,125 @@ function paintPicker(){
   $('bonusStar').className='st bonus'+(cur.bonus?' on':'');
 }
 
-/* ---------- Noten (Nase / Geschmack / Abgang, gemeinsame Liste) ---------- */
-function customTags(){
-  const set=new Set();
-  entries.forEach(e=>TABS.forEach(t=>(e[t.notes]||[]).forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); })));
-  if(cur) TABS.forEach(t=>(cur[t.notes]||[]).forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); }));
-  addedNow.forEach(f=>{ if(!ALL_DEFAULT.includes(f)) set.add(f); });
-  return [...set].sort((a,b)=>a.localeCompare(b,'de'));
+/* ---------- Noten im Formular (Reiter Nase / Geschmack / Abgang) ---------- */
+function chipHTML(n,map,on){
+  const d=map.get(n)||{emoji:''};
+  return `<button type="button" class="chip ${on?'on':''}" data-n="${esc(n)}">${d.emoji?`<span class="em">${esc(d.emoji)}</span>`:''}${esc(n)}</button>`;
 }
-function chipHTML(f,on){ return `<button type="button" class="chip ${on?'on':''}" data-n="${esc(f)}">${esc(f)}</button>`; }
 function renderNotes(t){
-  const box=$('notes_'+t.k), sel=cur[t.notes];
-  const groups={...FLAVORS}; const c=customTags(); if(c.length) groups['Eigene']=c;
-  let h = sel.length
-    ? `<div class="sel">${sel.map(f=>chipHTML(f,true)).join('')}</div>`
-    : `<div class="hint">Gruppe antippen, um Noten auszuwählen.</div>`;
-  for(const [g,list] of Object.entries(groups)){
-    const cnt=list.filter(f=>sel.includes(f)).length, open=openG[t.k].has(g);
+  const box=$('notes_'+t.k), sel=cur[t.notes], map=noteMap(), all=[...map.values()];
+  let h='';
+  if(sel.length) h+=`<div class="sel">${sel.map(n=>chipHTML(n,map,true)).join('')}</div>`;
+  else h+=`<div class="hint">Gruppe antippen, um Noten auszuwählen.</div>`;
+  GROUPS.forEach(g=>{
+    const list=all.filter(n=>n.group===g && (!n.hidden || sel.includes(n.name)));
+    const cnt=list.filter(n=>sel.includes(n.name)).length;
+    const open=openG[t.k].has(g);
     h+=`<button type="button" class="ghead" data-g="${esc(g)}"><span>${esc(g)}${cnt?`<i>${cnt}</i>`:''}</span><span class="arr">${open?'▴':'▾'}</span></button>`;
-    if(open) h+=`<div class="chips">${list.map(f=>chipHTML(f,sel.includes(f))).join('')}</div>`;
-  }
+    if(open){
+      h+=`<div class="chips">${list.map(n=>chipHTML(n.name,map,sel.includes(n.name))).join('')}<button type="button" class="chip add" data-add="${esc(g)}" aria-label="Eigene Note hinzufügen">＋ Eigene</button></div>`;
+      if(addOpen && addOpen.tab===t.k && addOpen.g===g){
+        h+=`<div class="addrow"><input class="an" maxlength="30" placeholder="Neue Note …" autocomplete="off"><input class="ae" maxlength="8" placeholder="🙂" aria-label="Emoji (optional)" autocomplete="off"><button type="button" class="primary" data-ok="1">OK</button><button type="button" class="ghost" data-cancel="1">✕</button></div><div class="hint">Emoji ist optional. Ohne Emoji wird der Name als Text angezeigt.</div>`;
+      }
+    }
+  });
   box.innerHTML=h;
 }
+function renderAllNotes(){ TABS.forEach(renderNotes); updateBadges(); }
 function updateBadges(){
   TABS.forEach(t=>{ const n=cur[t.notes].length; $('tab_'+t.k).innerHTML=esc(t.label)+(n?` <i>${n}</i>`:''); });
 }
-function renderAllNotes(){ TABS.forEach(renderNotes); updateBadges(); }
 function setTab(k){
+  curTab=k;
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===k));
   document.querySelectorAll('.tabpanel').forEach(p=>{ p.hidden = p.dataset.t!==k; });
 }
 $('tabs').addEventListener('click',ev=>{ const b=ev.target.closest('.tab'); if(b) setTab(b.dataset.t); });
-function addNote(t){
-  const inp=$('an_'+t.k), v=inp.value.trim().replace(/\s+/g,' '); if(!v) return;
-  const exist=[...ALL_DEFAULT,...customTags()].find(x=>x.toLowerCase()===v.toLowerCase());
-  const name=exist||v;
-  addedNow.add(name);
-  if(!cur[t.notes].includes(name)) cur[t.notes].push(name);
-  inp.value=''; renderAllNotes();
+
+function submitAdd(t){
+  const box=$('notes_'+t.k);
+  const name=(box.querySelector('.an')||{value:''}).value.trim().replace(/\s+/g,' ');
+  const emoji=firstGlyph((box.querySelector('.ae')||{value:''}).value);
+  if(!name){ toast('Bitte einen Namen eingeben'); return; }
+  const g=addOpen?addOpen.g:'Sonstiges';
+  const ex=[...noteMap().values()].find(n=>n.name.toLowerCase()===name.toLowerCase());
+  let use=name;
+  if(ex){
+    use=ex.name;
+    if(ex.hidden){ S.hidden=S.hidden.filter(x=>x!==ex.name); saveSettings(); }
+    toast(`„${ex.name}" gibt es schon (${ex.group}) – ausgewählt`);
+  } else {
+    S.custom.push({name,emoji,group:g}); saveSettings();
+  }
+  if(!cur[t.notes].includes(use)) cur[t.notes].push(use);
+  addOpen=null; renderAllNotes();
 }
 TABS.forEach(t=>{
-  $('notes_'+t.k).addEventListener('click',ev=>{
-    const b=ev.target.closest('button'); if(!b) return;
-    if(b.dataset.n!==undefined){
-      const a=cur[t.notes], i=a.indexOf(b.dataset.n);
-      if(i>=0) a.splice(i,1); else a.push(b.dataset.n);
+  const box=$('notes_'+t.k);
+  box.addEventListener('click',ev=>{
+    const el=ev.target.closest('button'); if(!el) return;
+    if(el.dataset.n!==undefined){
+      const a=cur[t.notes], i=a.indexOf(el.dataset.n);
+      if(i>=0) a.splice(i,1); else a.push(el.dataset.n);
       renderNotes(t); updateBadges();
-    } else if(b.dataset.g!==undefined){
-      const g=openG[t.k]; if(g.has(b.dataset.g)) g.delete(b.dataset.g); else g.add(b.dataset.g);
+    } else if(el.dataset.g!==undefined){
+      const s=openG[t.k]; if(s.has(el.dataset.g)) s.delete(el.dataset.g); else s.add(el.dataset.g);
+      if(addOpen && addOpen.tab===t.k && !s.has(addOpen.g)) addOpen=null;
       renderNotes(t);
-    }
+    } else if(el.dataset.add!==undefined){
+      const same=addOpen && addOpen.tab===t.k && addOpen.g===el.dataset.add;
+      const prev=addOpen && addOpen.tab;
+      addOpen = same ? null : {tab:t.k,g:el.dataset.add};
+      if(prev && prev!==t.k) renderNotes(TABS.find(x=>x.k===prev));
+      renderNotes(t);
+      if(addOpen){ const i=box.querySelector('.an'); if(i) i.focus(); }
+    } else if(el.dataset.ok!==undefined){ submitAdd(t); }
+    else if(el.dataset.cancel!==undefined){ addOpen=null; renderNotes(t); }
   });
-  $('addnote_'+t.k).onclick=()=>addNote(t);
-  $('an_'+t.k).addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addNote(t); }});
+  box.addEventListener('keydown',ev=>{
+    if(ev.key==='Enter' && ev.target.matches('.an,.ae')){ ev.preventDefault(); submitAdd(t); }
+  });
 });
 
+/* ---------- Region ---------- */
+function optGroup(label,items){
+  return `<optgroup label="${esc(label)}">${items.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')}</optgroup>`;
+}
+function buildRegionSelect(val){
+  const sel=$('f_region');
+  let h='<option value="">– nicht angegeben –</option>'+optGroup('Schottland',REG_SCOT)+optGroup('Weitere Länder',REG_OTHER);
+  const customs=S.regions.filter(r=>!KNOWN_REGIONS.has(r));
+  if(val && !KNOWN_REGIONS.has(val) && !customs.includes(val)) customs.push(val);
+  if(customs.length) h+=optGroup('Eigene',customs.map(r=>[r,r]));
+  h+='<option value="__new__">＋ Eigene Region hinzufügen …</option>';
+  sel.innerHTML=h; sel.value=val||'';
+  if(sel.value!==(val||'')) sel.value='';
+}
+$('f_region').addEventListener('change',()=>{
+  const isNew=$('f_region').value==='__new__';
+  $('newRegionRow').hidden=!isNew;
+  if(isNew) $('f_newRegion').focus();
+});
+function addRegion(){
+  const v=$('f_newRegion').value.trim().replace(/\s+/g,' ');
+  if(!v){ toast('Bitte eine Region eingeben'); return; }
+  if(!KNOWN_REGIONS.has(v) && !S.regions.includes(v)){ S.regions.push(v); saveSettings(); }
+  $('f_newRegion').value=''; $('newRegionRow').hidden=true;
+  buildRegionSelect(v);
+}
+$('addRegion').onclick=addRegion;
+$('f_newRegion').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addRegion(); }});
+
 /* ---------- Liste ---------- */
-function noteRows(e){
-  let h='';
+function noteIcon(n,map){
+  const d=map.get(n); const em=d&&d.emoji;
+  return em ? `<span class="ic" title="${esc(n)}">${esc(em)}</span>` : `<span class="ic tx" title="${esc(n)}">${esc(short(n))}</span>`;
+}
+function noteRowsHTML(e){
+  const map=noteMap(); let h='';
   TABS.forEach(t=>{
     const a=e[t.notes]||[]; if(!a.length) return;
-    h+=`<div class="nrow"><small>${t.label}</small><div class="tags">${a.slice(0,4).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}${a.length>4?`<span class="tag">+${a.length-4}</span>`:''}</div></div>`;
+    h+=`<div class="nrow"><small>${t.label}</small><span class="ni">${a.slice(0,6).map(n=>noteIcon(n,map)).join('')}${a.length>6?`<span class="more">+${a.length-6}</span>`:''}</span></div>`;
   });
   return h?`<div class="nrows">${h}</div>`:'';
 }
@@ -401,18 +536,18 @@ function renderList(){
     if(sort==='year') return (+b.year||0)-(+a.year||0);
     return (b.date||'').localeCompare(a.date||'') || (b.created||0)-(a.created||0);
   });
-  const L=$('list');
+  const Lb=$('list');
   if(!arr.length){
-    L.innerHTML = entries.length
+    Lb.innerHTML = entries.length
       ? '<div class="empty">Nichts gefunden.</div>'
       : '<div class="empty">Noch keine Verkostungen.<br>Tippe auf <b>+</b>, um deinen ersten Whisky einzutragen. 🥃</div>';
     return;
   }
-  L.innerHTML=arr.map(e=>{
+  Lb.innerHTML=arr.map(e=>{
     const meta=[e.distillery,e.region,e.year?('Jg. '+e.year):'',e.age?(e.age+' J.'):''].filter(Boolean).join(' · ');
-    return `<div class="card" data-id="${e.id}">
+    return `<div class="card" data-id="${esc(e.id)}">
       <div class="cardtop"><div><h3>${esc(e.name)}</h3><div class="sub">${esc(meta)||'&nbsp;'}</div></div>${ratingHTML(e,15)}</div>
-      ${noteRows(e)}
+      ${noteRowsHTML(e)}
       <div class="sub" style="margin-top:8px">${esc(fmtDate(e.date))}${e.place?' · '+esc(e.place):''}</div>
     </div>`;
   }).join('');
@@ -422,23 +557,23 @@ $('q').addEventListener('input',renderList);
 $('sort').addEventListener('change',renderList);
 
 /* ---------- Detail ---------- */
-function tabSections(e){
-  return TABS.map(t=>{
-    const a=e[t.notes]||[], txt=e[t.txt];
-    if(!a.length && !txt) return '';
-    return `<div class="dl"><b>${t.label}</b>${a.length?`<div class="tags" style="margin-top:4px">${a.map(f=>`<span class="tag">${esc(f)}</span>`).join('')}</div>`:''}${txt?`<p style="margin-top:6px">${esc(txt)}</p>`:''}</div>`;
-  }).join('');
-}
 function openDetail(id){
   const e=entries.find(x=>x.id===id); if(!e) return;
   detailId=id;
+  const map=noteMap();
   const meta=[['Destillerie',e.distillery],['Region / Land',e.region],['Art',e.type],['Jahrgang',e.year],['Alter',e.age?e.age+' Jahre':''],
     ['Alkohol',e.abv?fmt(e.abv)+' % vol.':''],['Verkostet am',fmtDate(e.date)],['Ort / Anlass',e.place]].filter(m=>m[1]);
+  const tag=n=>{ const d=map.get(n); return `<span class="tag">${d&&d.emoji?esc(d.emoji)+' ':''}${esc(n)}</span>`; };
+  const tabSec=TABS.map(t=>{
+    const a=e[t.notes]||[], txt=e[t.txt];
+    if(!a.length && !txt) return '';
+    return `<div class="dl"><b>${t.label}</b>${a.length?`<div class="tags" style="margin-top:4px">${a.map(tag).join('')}</div>`:''}${txt?`<p style="margin-top:6px">${esc(txt)}</p>`:''}</div>`;
+  }).join('');
   const sec=(t,v)=>v?`<div class="dl"><b>${t}</b><p>${esc(v)}</p></div>`:'';
   $('detail').innerHTML=`<h2>${esc(e.name)}</h2>
     <div style="margin-top:10px">${ratingHTML(e,26)}</div>
     <div class="meta">${meta.map(m=>`<div><small>${m[0]}</small>${esc(m[1])}</div>`).join('')}</div>
-    ${tabSections(e)}${sec('Gesamteindruck / Notizen',e.notes)}`;
+    ${tabSec}${sec('Gesamteindruck / Notizen',e.notes)}`;
   show('vDetail');
 }
 $('dBack').onclick=()=>{ show('vList'); };
@@ -448,53 +583,17 @@ $('dDel').onclick=()=>{
   if(confirm(`„${e.name}“ wirklich löschen?`)){ entries=entries.filter(x=>x.id!==detailId); save(); renderList(); show('vList'); toast('Gelöscht'); }
 };
 
-/* ---------- Regionen (Dropdown) ---------- */
-const SKEY = 'whisky-logbuch-settings-v1';
-const REG_SCOT = [['Speyside','Speyside'],['Highlands','Highlands'],['Lowlands','Lowlands'],['Islay','Islay'],['Campbeltown','Campbeltown'],['Schottische Inseln','Inseln (Skye, Jura, Mull, Orkney …)']];
-const REG_OTHER = ['Irland','USA – Kentucky','USA – Tennessee','USA – Sonstige','Kanada','Japan','Taiwan','Indien','Frankreich','Deutschland','Österreich','Schweiz','Schweden','Australien'].map(x=>[x,x]);
-const KNOWN_REGIONS = new Set([...REG_SCOT,...REG_OTHER].map(r=>r[0]));
-function readSettings(){ try{ const s=JSON.parse(localStorage.getItem(SKEY)); return s&&typeof s==='object'?s:{}; }catch(e){ return {}; } }
-let customRegions = (function(){ const r=readSettings().regions; return Array.isArray(r)?r.filter(x=>typeof x==='string'&&x):[]; })();
-function saveRegions(){ try{ const s=readSettings(); s.regions=customRegions; localStorage.setItem(SKEY,JSON.stringify(s)); }catch(e){ toast('Speichern fehlgeschlagen!'); } }
-function optGroup(label,items){
-  return `<optgroup label="${esc(label)}">${items.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')}</optgroup>`;
-}
-function buildRegionSelect(val){
-  const sel=$('f_region');
-  let h='<option value="">– nicht angegeben –</option>'+optGroup('Schottland',REG_SCOT)+optGroup('Weitere Länder',REG_OTHER);
-  const customs=customRegions.filter(r=>!KNOWN_REGIONS.has(r));
-  if(val && !KNOWN_REGIONS.has(val) && !customs.includes(val)) customs.push(val);
-  if(customs.length) h+=optGroup('Eigene',customs.map(r=>[r,r]));
-  h+='<option value="__new__">＋ Eigene Region hinzufügen …</option>';
-  sel.innerHTML=h; sel.value=val||'';
-  if(sel.value!==(val||'')) sel.value='';
-}
-$('f_region').addEventListener('change',()=>{
-  const isNew=$('f_region').value==='__new__';
-  $('newRegionRow').hidden=!isNew;
-  if(isNew) $('f_newRegion').focus();
-});
-function addRegion(){
-  const v=$('f_newRegion').value.trim().replace(/\s+/g,' ');
-  if(!v){ toast('Bitte eine Region eingeben'); return; }
-  if(!KNOWN_REGIONS.has(v) && !customRegions.includes(v)){ customRegions.push(v); saveRegions(); }
-  $('f_newRegion').value=''; $('newRegionRow').hidden=true;
-  buildRegionSelect(v);
-}
-$('addRegion').onclick=addRegion;
-$('f_newRegion').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addRegion(); }});
-
 /* ---------- Formular ---------- */
-const FIELDS={name:'f_name',distillery:'f_dist',region:'f_region',type:'f_type',abv:'f_abv',year:'f_year',age:'f_age',date:'f_date',place:'f_place',nose:'f_nose',taste:'f_taste',finish:'f_finish',notes:'f_notes'};
+const FIELDS={name:'f_name',distillery:'f_dist',type:'f_type',abv:'f_abv',year:'f_year',age:'f_age',date:'f_date',place:'f_place',nose:'f_nose',taste:'f_taste',finish:'f_finish',notes:'f_notes'};
 function openForm(id){
   const e = id ? entries.find(x=>x.id===id) : null;
   cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,rating:0,bonus:false,date:today()};
   cur.rating=cur.rating||0;
   TABS.forEach(t=>{ if(!Array.isArray(cur[t.notes])) cur[t.notes]=[]; });
-  buildRegionSelect(cur.region||''); $('newRegionRow').hidden=true; $('f_newRegion').value='';
   for(const [k,el] of Object.entries(FIELDS)) $(el).value = cur[k]==null?'':cur[k];
+  buildRegionSelect(cur.region||''); $('newRegionRow').hidden=true; $('f_newRegion').value='';
   $('fTitle').textContent = e?'Eintrag bearbeiten':'Neuer Eintrag';
-  addedNow=new Set(); openG={nose:new Set(),taste:new Set(),finish:new Set()};
+  openG={nose:new Set(),taste:new Set(),finish:new Set()}; addOpen=null;
   buildStarPicker(); paintPicker(); renderAllNotes(); setTab('nose');
   show('vForm');
   if(!e) setTimeout(()=>$('f_name').focus(),50);
@@ -509,24 +608,77 @@ $('fSave').onclick=()=>{
   const o={...cur};
   for(const [k,el] of Object.entries(FIELDS)) o[k]=$(el).value.trim();
   o.abv=o.abv.replace(',','.');
-  delete o.palate; delete o.flavors;
-  if(o.region==='__new__'){
-    o.region=$('f_newRegion').value.trim().replace(/\s+/g,' ');
-    if(o.region && !KNOWN_REGIONS.has(o.region) && !customRegions.includes(o.region)){ customRegions.push(o.region); saveRegions(); }
+  let reg=$('f_region').value;
+  if(reg==='__new__'){
+    reg=$('f_newRegion').value.trim().replace(/\s+/g,' ');
+    if(reg && !KNOWN_REGIONS.has(reg) && !S.regions.includes(reg)){ S.regions.push(reg); saveSettings(); }
   }
+  o.region=reg;
+  delete o.palate; delete o.flavors;
   if(o.id){ entries=entries.map(x=>x.id===o.id?{...o,updated:Date.now()}:x); }
   else { o.id=uid(); o.created=Date.now(); entries.push(o); }
   if(save()){ renderList(); toast('Gespeichert'); openDetail(o.id); }
 };
 
-/* ---------- Backup ---------- */
-$('btnMenu').onclick=()=>{
-  const a=confirm('Backup erstellen?\n\nOK = Exportieren (Datei speichern)\nAbbrechen = weitere Optionen');
-  if(a){ exportData(); return; }
-  if(confirm('Backup aus Datei wiederherstellen (Import)?\nBestehende Einträge bleiben erhalten, neue werden ergänzt.')) $('importFile').click();
-};
+/* ---------- Verwaltung: Noten & Regionen ---------- */
+function renderManage(){
+  const y=window.scrollY, map=noteMap(), all=[...map.values()];
+  let h=`<div class="hint">Mitgelieferte Noten kannst du <b>ausblenden</b> – sie verschwinden dann aus der Auswahl, bleiben aber in bereits gespeicherten Einträgen. Eigene Noten kannst du in eine andere Gruppe <b>verschieben</b> oder <b>löschen</b> (dann werden sie aus allen Einträgen entfernt). Neue Noten legst du direkt im Formular mit „＋ Eigene“ in der jeweiligen Gruppe an.</div>`;
+  if(S.hidden.length) h+=`<div style="margin-top:10px"><button data-showall="1">Alle ausgeblendeten wieder einblenden (${S.hidden.length})</button></div>`;
+  GROUPS.forEach(g=>{
+    h+=`<div class="mgroup"><b>${esc(g)}</b>`;
+    all.filter(n=>n.group===g).forEach(n=>{
+      h+=`<div class="mrow ${n.hidden?'dim':''}"><span class="mn">${n.emoji?esc(n.emoji)+' ':''}${esc(n.name)}</span>`;
+      if(n.builtin){
+        h+= n.hidden ? `<button data-show="${esc(n.name)}">Einblenden</button>` : `<button class="ghost" data-hide="${esc(n.name)}">Ausblenden</button>`;
+      } else {
+        h+=`<select data-move="${esc(n.name)}" aria-label="Gruppe">${GROUPS.map(x=>`<option ${x===g?'selected':''}>${esc(x)}</option>`).join('')}</select><button class="danger" data-del="${esc(n.name)}" aria-label="Löschen">✕</button>`;
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  h+=`<div class="mgroup"><b>Eigene Regionen</b>`;
+  if(S.regions.length) S.regions.forEach(r=>{ h+=`<div class="mrow"><span class="mn">${esc(r)}</span><button class="danger" data-delreg="${esc(r)}" aria-label="Entfernen">✕</button></div>`; });
+  else h+=`<div class="hint">Noch keine. Im Formular über „Region / Land → Eigene Region hinzufügen“ anlegen.</div>`;
+  h+=`<div class="hint">Beim Entfernen bleibt die Region in bestehenden Einträgen erhalten und verschwindet nur aus der Auswahl.</div></div>`;
+  $('manage').innerHTML=h; window.scrollTo(0,y);
+}
+$('manage').addEventListener('click',ev=>{
+  const b=ev.target.closest('button'); if(!b) return;
+  const d=b.dataset;
+  if(d.hide!==undefined){ if(!S.hidden.includes(d.hide)) S.hidden.push(d.hide); saveSettings(); renderManage(); }
+  else if(d.show!==undefined){ S.hidden=S.hidden.filter(x=>x!==d.show); saveSettings(); renderManage(); }
+  else if(d.showall!==undefined){ S.hidden=[]; saveSettings(); renderManage(); }
+  else if(d.del!==undefined){
+    const name=d.del;
+    const cnt=entries.filter(e=>TABS.some(t=>(e[t.notes]||[]).includes(name))).length;
+    if(!confirm(`Eigene Note „${name}“ löschen?`+(cnt?`\nSie wird aus ${cnt} gespeicherten ${cnt===1?'Eintrag':'Einträgen'} entfernt.`:''))) return;
+    S.custom=S.custom.filter(c=>c.name!==name);
+    entries.forEach(e=>TABS.forEach(t=>{ e[t.notes]=(e[t.notes]||[]).filter(n=>n!==name); }));
+    saveSettings(); save(); renderManage(); renderList(); toast('Gelöscht');
+  }
+  else if(d.delreg!==undefined){ S.regions=S.regions.filter(r=>r!==d.delreg); saveSettings(); renderManage(); }
+});
+$('manage').addEventListener('change',ev=>{
+  const s=ev.target.closest('select[data-move]'); if(!s) return;
+  const c=S.custom.find(x=>x.name===s.dataset.move); if(!c) return;
+  c.group=s.value; saveSettings(); renderManage(); toast('Verschoben nach „'+s.value+'“');
+});
+$('mBack').onclick=()=>{ show('vList'); renderList(); };
+
+/* ---------- Menü & Backup ---------- */
+function openSheet(){ $('sheet').hidden=false; }
+function closeSheet(){ $('sheet').hidden=true; }
+$('btnMenu').onclick=openSheet;
+$('mClose').onclick=closeSheet;
+$('sheet').addEventListener('click',e=>{ if(e.target===$('sheet')) closeSheet(); });
+$('mManage').onclick=()=>{ closeSheet(); renderManage(); show('vManage'); };
+$('mExport').onclick=()=>{ closeSheet(); exportData(); };
+$('mImport').onclick=()=>{ closeSheet(); $('importFile').click(); };
+
 function exportData(){
-  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:2,exported:new Date().toISOString(),entries},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:2,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
   const name=`whisky-logbuch-${today()}.json`;
   try{
     const f=new File([blob],name,{type:'application/json'});
@@ -542,6 +694,13 @@ $('importFile').addEventListener('change',ev=>{
     try{
       const d=JSON.parse(r.result); const arr=Array.isArray(d)?d:d.entries;
       if(!Array.isArray(arr)) throw 0;
+      if(d && d.settings){
+        (Array.isArray(d.settings.custom)?d.settings.custom:[]).forEach(c=>{
+          if(c && typeof c.name==='string' && c.name && !noteMap().has(c.name)) S.custom.push({name:c.name,emoji:typeof c.emoji==='string'?c.emoji:'',group:GROUPS.includes(c.group)?c.group:'Sonstiges'});
+        });
+        (Array.isArray(d.settings.regions)?d.settings.regions:[]).forEach(x=>{ if(typeof x==='string' && x && !S.regions.includes(x) && !KNOWN_REGIONS.has(x)) S.regions.push(x); });
+        saveSettings();
+      }
       const have=new Set(entries.map(e=>e.id)); let n=0;
       arr.forEach(e=>{
         if(!e || typeof e!=='object' || !e.name) return;
@@ -549,7 +708,7 @@ $('importFile').addEventListener('change',ev=>{
         if(have.has(e.id)) return;
         normalizeEntry(e); entries.push(e); have.add(e.id); n++;
       });
-      save(); renderList(); toast(n+' Einträge importiert');
+      ensureNotesKnown(); save(); renderList(); toast(n+' Einträge importiert');
     }catch(e){ toast('Datei konnte nicht gelesen werden'); }
     ev.target.value='';
   };
@@ -558,7 +717,11 @@ $('importFile').addEventListener('change',ev=>{
 
 /* Zurück-Taste (Android) */
 history.replaceState({v:1},'');
-window.addEventListener('popstate',()=>{ history.pushState({v:1},''); if(!$('vList').classList.contains('active')) show('vList'); });
+window.addEventListener('popstate',()=>{
+  history.pushState({v:1},'');
+  if(!$('sheet').hidden){ closeSheet(); return; }
+  if(!$('vList').classList.contains('active')){ show('vList'); renderList(); }
+});
 history.pushState({v:1},'');
 
 /* Offline / Installation */
@@ -566,7 +729,6 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
-if(L0.ch) save();
 renderList();
 })();
 </script>
