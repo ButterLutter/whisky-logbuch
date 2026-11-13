@@ -122,6 +122,9 @@ main{padding:12px 16px}
 .clip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tbox{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 .sheetbox>b{font-size:17px}
+.sect .opt{color:var(--muted);text-transform:none;letter-spacing:0;font-size:12px}
+.matrow{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:rgba(255,255,255,.015)}
+.matrow .row button{flex:none;padding:10px 14px}
 </style>
 </head>
 <body>
@@ -181,6 +184,10 @@ main{padding:12px 16px}
       <div><label for="f_year">Jahrgang</label><input id="f_year" inputmode="numeric" placeholder="z. B. 2008"></div>
       <div><label for="f_age">Alter (Jahre)</label><input id="f_age" inputmode="numeric" placeholder="z. B. 12"></div>
     </div>
+    <h3 class="sect">Reifung <span class="opt">(optional)</span></h3>
+    <div id="matRows"></div>
+    <div class="chips"><button type="button" class="chip add" id="matAdd">＋ Reifung hinzufügen</button></div>
+
     <h3 class="sect">Verkostungen</h3>
     <div class="chips" id="tchips"></div>
 
@@ -235,14 +242,14 @@ main{padding:12px 16px}
 
 <!-- VERWALTUNG -->
 <div id="vManage" class="view">
-  <header><div class="row"><button class="ghost" id="mBack">← Zurück</button><b style="margin-left:auto">Noten &amp; Regionen</b></div></header>
+  <header><div class="row"><button class="ghost" id="mBack">← Zurück</button><b style="margin-left:auto">Noten, Regionen &amp; Fässer</b></div></header>
   <main id="manage"></main>
 </div>
 
 <!-- MENÜ -->
 <div class="sheet" id="sheet" hidden>
   <div class="sheetbox">
-    <button id="mManage">Noten &amp; Regionen verwalten</button>
+    <button id="mManage">Noten, Regionen &amp; Fässer verwalten</button>
     <button id="mExport">Backup exportieren</button>
     <button id="mImport">Backup importieren</button>
     <button id="mClose" class="ghost">Schließen</button>
@@ -292,6 +299,16 @@ const REG_SCOT = [['Speyside','Speyside'],['Highlands','Highlands'],['Lowlands',
 const REG_OTHER = ['Irland','USA – Kentucky','USA – Tennessee','USA – Sonstige','Kanada','Japan','Taiwan','Indien','Frankreich','Deutschland','Österreich','Schweiz','Schweden','Australien'].map(x=>[x,x]);
 const KNOWN_REGIONS = new Set([...REG_SCOT,...REG_OTHER].map(r=>r[0]));
 
+/* ---------- Reifung: Reifungsart, Fass-Inhalt, Größe / Form ---------- */
+const CASKS = ['Ex-Bourbon','Ex-Rye','Sherry Oloroso','Sherry Pedro Ximénez','Sherry Fino/Manzanilla','Sherry (allgemein)','Port','Madeira','Rum','Rotwein','Weißwein','Sauternes','Cognac','Neues Eichenfass','Refill-Fass','Mizunara'];
+const MATS  = ['Vollreifung','Finish','Zweitreifung (Double Maturation)','Solera'];
+const SIZES = ['Barrel','Hogshead','Butt','Puncheon','Quarter Cask','Barrique','Octave','Port Pipe'];
+const MAT_FIELDS = {
+  type:{base:MATS,  key:'matTypes', ph:'Reifungsart wählen …', newPh:'Neue Reifungsart …', title:'Eigene Reifungsarten'},
+  cask:{base:CASKS, key:'casks',    ph:'Fass-Inhalt wählen …', newPh:'Neuer Fass-Inhalt …', title:'Eigene Fass-Inhalte'},
+  size:{base:SIZES, key:'caskSizes',ph:'Größe / Form wählen …', newPh:'Neue Größe / Form …', title:'Eigene Größen / Formen'}
+};
+
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmt(v){ return String(v).replace('.',','); }
@@ -308,7 +325,10 @@ function loadSettings(){
   return {
     hidden:  Array.isArray(s.hidden)  ? s.hidden.filter(x=>typeof x==='string') : [],
     custom:  Array.isArray(s.custom)  ? s.custom.filter(c=>c && typeof c.name==='string' && c.name) : [],
-    regions: Array.isArray(s.regions) ? s.regions.filter(x=>typeof x==='string' && x) : []
+    regions: Array.isArray(s.regions) ? s.regions.filter(x=>typeof x==='string' && x) : [],
+    casks:     Array.isArray(s.casks)     ? s.casks.filter(x=>typeof x==='string' && x) : [],
+    matTypes:  Array.isArray(s.matTypes)  ? s.matTypes.filter(x=>typeof x==='string' && x) : [],
+    caskSizes: Array.isArray(s.caskSizes) ? s.caskSizes.filter(x=>typeof x==='string' && x) : []
   };
 }
 function saveSettings(){ try{ localStorage.setItem(SKEY, JSON.stringify(S)); return true; }catch(e){ toast('Speichern fehlgeschlagen!'); return false; } }
@@ -355,6 +375,9 @@ function normalizeEntry(e){
   e.tastings=e.tastings.filter(x=>x && typeof x==='object');
   e.tastings.forEach(normalizeTasting);
   if(!e.tastings.length) e.tastings.push(newTasting(''));
+  e.maturation = Array.isArray(e.maturation)
+    ? e.maturation.filter(r=>r && typeof r==='object').map(r=>({type:typeof r.type==='string'?r.type:'',cask:typeof r.cask==='string'?r.cask:'',size:typeof r.size==='string'?r.size:''}))
+    : [];
   return ch;
 }
 function load(){
@@ -581,6 +604,7 @@ function renderList(){
   let arr=entries.filter(e=>{
     if(!q) return true;
     return [e.name,e.distillery,e.region,e.type,e.year,
+      ...(e.maturation||[]).flatMap(r=>[r.type,r.cask,r.size]),
       ...e.tastings.flatMap(ts=>[ts.date,fmtDate(ts.date),ts.occasion,ts.nose,ts.taste,ts.finish,ts.notes,...TABS.map(t=>(ts[t.notes]||[]).join(' '))])
     ].join(' ').toLowerCase().includes(q);
   });
@@ -632,11 +656,16 @@ function renderDetail(id,tid){
   const meta=[['Destillerie',e.distillery],['Region / Land',e.region],['Art',e.type],['Jahrgang',e.year],['Alter',e.age?e.age+' Jahre':''],
     ['Alkohol',e.abv?fmt(e.abv)+' % vol.':'']].filter(m=>m[1]);
   const sec=(h,v)=>v?`<div class="dl"><b>${h}</b><p>${esc(v)}</p></div>`:'';
+  const matLines=(e.maturation||[]).map(r=>{
+    const parts=[r.cask,r.size].filter(Boolean).join(' · ');
+    return r.type ? (parts ? `${r.type}: ${parts}` : r.type) : parts;
+  }).filter(Boolean);
   const chips=list.length>1
     ? `<div class="dl"><b>Verkostungen (${list.length})</b><div class="chips">${list.map(x=>`<button type="button" class="chip ${x===t?'on':''}" data-tid="${esc(x.id)}">${esc(fmtDate(x.date)||'ohne Datum')}${x.rating>0?` · ${fmt(x.rating)}★`:''}${x.bonus?' ✦':''}</button>`).join('')}</div></div>`
     : '';
   $('detail').innerHTML=`<h2>${esc(e.name)}</h2>
     <div class="meta">${meta.map(m=>`<div><small>${m[0]}</small>${esc(m[1])}</div>`).join('')}</div>
+    ${matLines.length?sec('Reifung',matLines.join('\n')):''}
     ${chips}
     <div class="tbox">
       <div class="cardtop"><div class="sub" style="font-size:14px">${t.date?'Verkostet am '+esc(fmtDate(t.date)):'Ohne Datum'}</div>${ratingHTML(t,22)}</div>
@@ -728,10 +757,75 @@ $('tDel').onclick=()=>{
   curT=sortedT(cur)[0]; loadTasting(); renderTChips();
   toast('Verkostung entfernt – zum Übernehmen speichern');
 };
+/* ---------- Reifung im Formular ---------- */
+let matPending = null;   // {i,f}: bei welchem Feld gerade "Eigene hinzufügen" offen ist
+function matOptions(f,val){
+  const m=MAT_FIELDS[f];
+  const list=[...m.base, ...S[m.key].filter(x=>!m.base.includes(x))];
+  if(val && !list.includes(val)) list.push(val);
+  return list;
+}
+function matSelectHTML(r,i,f){
+  const m=MAT_FIELDS[f], val=r[f]||'';
+  return `<select data-i="${i}" data-f="${f}" aria-label="${esc(m.ph)}"><option value="">${esc(m.ph)}</option>`
+    + matOptions(f,val).map(o=>`<option value="${esc(o)}"${o===val?' selected':''}>${esc(o)}</option>`).join('')
+    + `<option value="__new__">＋ Eigene hinzufügen …</option></select>`;
+}
+function renderMat(){
+  const pend=(i,f)=>(matPending && matPending.i===i && matPending.f===f)
+    ? `<div class="addrow"><input class="mat_in" maxlength="40" placeholder="${esc(MAT_FIELDS[f].newPh)}" autocomplete="off"><button type="button" class="primary" data-ok="1">OK</button><button type="button" class="ghost" data-cancel="1">✕</button></div>` : '';
+  $('matRows').innerHTML=cur.maturation.map((r,i)=>
+    `<div class="matrow"><div class="row">${matSelectHTML(r,i,'type')}<button type="button" class="danger" data-rm="${i}" aria-label="Reifung entfernen">✕</button></div>${pend(i,'type')}`
+    +`<div style="margin-top:8px">${matSelectHTML(r,i,'cask')}</div>${pend(i,'cask')}`
+    +`<div style="margin-top:8px">${matSelectHTML(r,i,'size')}</div>${pend(i,'size')}</div>`).join('');
+}
+function submitMatAdd(){
+  if(!matPending) return;
+  const inp=$('matRows').querySelector('.mat_in');
+  const v=(inp?inp.value:'').trim().replace(/\s+/g,' ');
+  if(!v){ toast('Bitte einen Namen eingeben'); return; }
+  const {i,f}=matPending, m=MAT_FIELDS[f];
+  const ex=[...m.base,...S[m.key]].find(x=>x.toLowerCase()===v.toLowerCase());
+  if(!ex){ S[m.key].push(v); saveSettings(); }
+  cur.maturation[i][f]=ex||v; matPending=null; renderMat();
+  if(ex) toast(`„${ex}“ gibt es schon – ausgewählt`);
+}
+function ensureMatKnown(){   // nach Import: unbekannte Werte in die Auswahl aufnehmen
+  let ch=false;
+  entries.forEach(e=>(e.maturation||[]).forEach(r=>Object.keys(MAT_FIELDS).forEach(f=>{
+    const m=MAT_FIELDS[f], v=r[f];
+    if(v && !m.base.includes(v) && !S[m.key].includes(v)){ S[m.key].push(v); ch=true; }
+  })));
+  if(ch) saveSettings();
+}
+$('matRows').addEventListener('change',ev=>{
+  const sel=ev.target.closest('select[data-f]'); if(!sel) return;
+  const i=+sel.dataset.i, f=sel.dataset.f;
+  if(sel.value==='__new__'){
+    matPending={i,f}; renderMat();
+    const inp=$('matRows').querySelector('.mat_in'); if(inp) inp.focus();
+    return;
+  }
+  cur.maturation[i][f]=sel.value;
+  if(matPending){ matPending=null; renderMat(); }
+});
+$('matRows').addEventListener('click',ev=>{
+  const b=ev.target.closest('button'); if(!b) return;
+  if(b.dataset.rm!==undefined){ cur.maturation.splice(+b.dataset.rm,1); matPending=null; renderMat(); }
+  else if(b.dataset.ok!==undefined) submitMatAdd();
+  else if(b.dataset.cancel!==undefined){ matPending=null; renderMat(); }
+});
+$('matRows').addEventListener('keydown',ev=>{
+  if(ev.key==='Enter' && ev.target.matches('.mat_in')){ ev.preventDefault(); submitMatAdd(); }
+});
+$('matAdd').onclick=()=>{ cur.maturation.push({type:'',cask:'',size:''}); matPending=null; renderMat(); };
+
 function openForm(id,tid){
   const e = id ? entries.find(x=>x.id===id) : null;
-  cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,tastings:[newTasting(today())]};
+  cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,maturation:[],tastings:[newTasting(today())]};
   curT = (tid && cur.tastings.find(x=>x.id===tid)) || sortedT(cur)[0];
+  if(!Array.isArray(cur.maturation)) cur.maturation=[];
+  matPending=null; renderMat();
   for(const [k,el] of Object.entries(FIELDS)) $(el).value = cur[k]==null?'':cur[k];
   buildRegionSelect(cur.region||''); $('newRegionRow').hidden=true; $('f_newRegion').value='';
   $('fTitle').textContent = e?'Eintrag bearbeiten':'Neuer Eintrag';
@@ -756,6 +850,7 @@ $('fSave').onclick=()=>{
     if(reg && !KNOWN_REGIONS.has(reg) && !S.regions.includes(reg)){ S.regions.push(reg); saveSettings(); }
   }
   o.region=reg;
+  o.maturation=cur.maturation.filter(r=>r.type||r.cask||r.size).map(r=>({type:r.type||'',cask:r.cask||'',size:r.size||''}));
   o.tastings=sortedT(cur);
   if(o.id){ entries=entries.map(x=>x.id===o.id?{...o,updated:Date.now()}:x); }
   else { o.id=uid(); o.created=Date.now(); entries.push(o); }
@@ -784,6 +879,14 @@ function renderManage(){
   if(S.regions.length) S.regions.forEach(r=>{ h+=`<div class="mrow"><span class="mn">${esc(r)}</span><button class="danger" data-delreg="${esc(r)}" aria-label="Entfernen">✕</button></div>`; });
   else h+=`<div class="hint">Noch keine. Im Formular über „Region / Land → Eigene Region hinzufügen“ anlegen.</div>`;
   h+=`<div class="hint">Beim Entfernen bleibt die Region in bestehenden Einträgen erhalten und verschwindet nur aus der Auswahl.</div></div>`;
+  Object.keys(MAT_FIELDS).forEach(f=>{
+    const m=MAT_FIELDS[f];
+    h+=`<div class="mgroup"><b>${esc(m.title)}</b>`;
+    if(S[m.key].length) S[m.key].forEach(r=>{ h+=`<div class="mrow"><span class="mn">${esc(r)}</span><button class="danger" data-delopt="${m.key}|${esc(r)}" aria-label="Entfernen">✕</button></div>`; });
+    else h+=`<div class="hint">Noch keine. Im Formular unter „Reifung“ über „＋ Eigene hinzufügen …“ anlegen.</div>`;
+    h+=`</div>`;
+  });
+  h+=`<div class="hint" style="margin-top:14px">Beim Entfernen bleibt der Eintrag in bestehenden Whiskys erhalten und verschwindet nur aus der Auswahl.</div>`;
   $('manage').innerHTML=h; window.scrollTo(0,y);
 }
 $('manage').addEventListener('click',ev=>{
@@ -801,6 +904,10 @@ $('manage').addEventListener('click',ev=>{
     saveSettings(); save(); renderManage(); renderList(); toast('Gelöscht');
   }
   else if(d.delreg!==undefined){ S.regions=S.regions.filter(r=>r!==d.delreg); saveSettings(); renderManage(); }
+  else if(d.delopt!==undefined){
+    const p=d.delopt.indexOf('|'), k=d.delopt.slice(0,p), name=d.delopt.slice(p+1);
+    if(['casks','matTypes','caskSizes'].includes(k)){ S[k]=S[k].filter(x=>x!==name); saveSettings(); renderManage(); }
+  }
 });
 $('manage').addEventListener('change',ev=>{
   const s=ev.target.closest('select[data-move]'); if(!s) return;
@@ -820,7 +927,7 @@ $('mExport').onclick=()=>{ closeSheet(); exportData(); };
 $('mImport').onclick=()=>{ closeSheet(); $('importFile').click(); };
 
 function exportData(){
-  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:3,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:4,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
   const name=`whisky-logbuch-${today()}.json`;
   try{
     const f=new File([blob],name,{type:'application/json'});
@@ -841,6 +948,10 @@ $('importFile').addEventListener('change',ev=>{
           if(c && typeof c.name==='string' && c.name && !noteMap().has(c.name)) S.custom.push({name:c.name,emoji:typeof c.emoji==='string'?c.emoji:'',group:GROUPS.includes(c.group)?c.group:'Sonstiges'});
         });
         (Array.isArray(d.settings.regions)?d.settings.regions:[]).forEach(x=>{ if(typeof x==='string' && x && !S.regions.includes(x) && !KNOWN_REGIONS.has(x)) S.regions.push(x); });
+        Object.keys(MAT_FIELDS).forEach(f=>{
+          const k=MAT_FIELDS[f].key;
+          (Array.isArray(d.settings[k])?d.settings[k]:[]).forEach(x=>{ if(typeof x==='string' && x && !S[k].includes(x)) S[k].push(x); });
+        });
         saveSettings();
       }
       const have=new Set(entries.map(e=>e.id)); let n=0;
@@ -850,7 +961,7 @@ $('importFile').addEventListener('change',ev=>{
         if(have.has(e.id)) return;
         normalizeEntry(e); entries.push(e); have.add(e.id); n++;
       });
-      ensureNotesKnown(); save(); renderList(); toast(n+' Einträge importiert');
+      ensureNotesKnown(); ensureMatKnown(); save(); renderList(); toast(n+' Einträge importiert');
     }catch(e){ toast('Datei konnte nicht gelesen werden'); }
     ev.target.value='';
   };
