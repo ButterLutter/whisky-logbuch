@@ -95,7 +95,8 @@ main{padding:12px 16px}
 .more{font-size:12px;color:var(--muted)}
 .view{display:none}.view.active{display:block}
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:6}
-.bar button{flex:1}
+.bar button{flex:1;min-width:0;padding:10px 6px;font-size:15px;white-space:nowrap}
+#dDel{flex:.8}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom));background:#000d;color:#fff;padding:10px 16px;border-radius:999px;z-index:40;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
 .detail h2{margin:0}
@@ -116,6 +117,11 @@ main{padding:12px 16px}
 .mrow button{padding:6px 10px;font-size:14px;flex:none}
 .mrow select{width:auto;padding:6px 8px;font-size:14px;flex:none;max-width:42vw}
 .mn{flex:1;min-width:0;overflow-wrap:anywhere}
+/* Verkostungen */
+.sect{margin:26px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--amber);text-transform:uppercase;letter-spacing:.5px}
+.clip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbox{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.sheetbox>b{font-size:17px}
 </style>
 </head>
 <body>
@@ -143,7 +149,7 @@ main{padding:12px 16px}
 <div id="vDetail" class="view">
   <header><div class="row"><button class="ghost" id="dBack">← Zurück</button></div></header>
   <main id="detail" class="detail"></main>
-  <div class="bar"><button class="danger" id="dDel">Löschen</button><button class="primary" id="dEdit">Bearbeiten</button></div>
+  <div class="bar"><button class="danger" id="dDel">Löschen</button><button id="dNewT">＋ Verkostung</button><button class="primary" id="dEdit">Bearbeiten</button></div>
 </div>
 
 <!-- FORMULAR -->
@@ -175,46 +181,54 @@ main{padding:12px 16px}
       <div><label for="f_year">Jahrgang</label><input id="f_year" inputmode="numeric" placeholder="z. B. 2008"></div>
       <div><label for="f_age">Alter (Jahre)</label><input id="f_age" inputmode="numeric" placeholder="z. B. 12"></div>
     </div>
-    <div class="grid2">
-      <div><label for="f_date">Datum der Verkostung</label><input id="f_date" type="date"></div>
-      <div><label for="f_place">Ort / Anlass</label><input id="f_place" placeholder="Whisky-Abend, Bar…" autocomplete="off"></div>
-    </div>
+    <h3 class="sect">Verkostungen</h3>
+    <div class="chips" id="tchips"></div>
 
-    <label>Bewertung</label>
-    <div class="rate">
-      <div class="stars" id="starPick"></div>
-      <span class="rv" id="rv">–</span>
-      <button type="button" class="bonusbtn" id="bonusBtn">
-        <span class="stars" style="--s:22px"><span class="st bonus" id="bonusStar"></span></span> Bonus
-      </button>
-      <button type="button" class="ghost" id="rateClear">Zurücksetzen</button>
-    </div>
-    <div class="hint">Tippe links bzw. rechts in einen Stern für halbe bzw. ganze Punkte. Der rote Bonus-Stern hebt etwas Besonderes hervor.</div>
+    <div id="tsec">
+      <label for="f_date">Datum der Verkostung</label>
+      <input id="f_date" type="date">
 
-    <div class="tabs" id="tabs">
-      <button type="button" class="tab on" id="tab_nose" data-t="nose">Nase</button>
-      <button type="button" class="tab" id="tab_taste" data-t="taste">Geschmack</button>
-      <button type="button" class="tab" id="tab_finish" data-t="finish">Abgang</button>
-    </div>
+      <label for="f_occ">Notiz zum Anlass</label>
+      <textarea id="f_occ" placeholder="z. B. Whisky-Abend, Geburtstag, Bar …"></textarea>
 
-    <div class="tabpanel" data-t="nose">
-      <div class="notesbox" id="notes_nose"></div>
-      <label for="f_nose">Notizen zur Nase</label>
-      <textarea id="f_nose"></textarea>
-    </div>
-    <div class="tabpanel" data-t="taste" hidden>
-      <div class="notesbox" id="notes_taste"></div>
-      <label for="f_taste">Notizen zum Geschmack</label>
-      <textarea id="f_taste"></textarea>
-    </div>
-    <div class="tabpanel" data-t="finish" hidden>
-      <div class="notesbox" id="notes_finish"></div>
-      <label for="f_finish">Notizen zum Abgang</label>
-      <textarea id="f_finish"></textarea>
-    </div>
+      <label>Bewertung</label>
+      <div class="rate">
+        <div class="stars" id="starPick"></div>
+        <span class="rv" id="rv">–</span>
+        <button type="button" class="bonusbtn" id="bonusBtn">
+          <span class="stars" style="--s:22px"><span class="st bonus" id="bonusStar"></span></span> Bonus
+        </button>
+        <button type="button" class="ghost" id="rateClear">Zurücksetzen</button>
+      </div>
+      <div class="hint">Tippe links bzw. rechts in einen Stern für halbe bzw. ganze Punkte. Der rote Bonus-Stern hebt etwas Besonderes hervor.</div>
 
-    <label for="f_notes">Gesamteindruck / eigene Notizen</label>
-    <textarea id="f_notes" placeholder="Würde ich nachkaufen?, Preis …"></textarea>
+      <div class="tabs" id="tabs">
+        <button type="button" class="tab on" id="tab_nose" data-t="nose">Nase</button>
+        <button type="button" class="tab" id="tab_taste" data-t="taste">Geschmack</button>
+        <button type="button" class="tab" id="tab_finish" data-t="finish">Abgang</button>
+      </div>
+
+      <div class="tabpanel" data-t="nose">
+        <div class="notesbox" id="notes_nose"></div>
+        <label for="f_nose">Notizen zur Nase</label>
+        <textarea id="f_nose"></textarea>
+      </div>
+      <div class="tabpanel" data-t="taste" hidden>
+        <div class="notesbox" id="notes_taste"></div>
+        <label for="f_taste">Notizen zum Geschmack</label>
+        <textarea id="f_taste"></textarea>
+      </div>
+      <div class="tabpanel" data-t="finish" hidden>
+        <div class="notesbox" id="notes_finish"></div>
+        <label for="f_finish">Notizen zum Abgang</label>
+        <textarea id="f_finish"></textarea>
+      </div>
+
+      <label for="f_notes">Gesamteindruck / eigene Notizen</label>
+      <textarea id="f_notes" placeholder="Würde ich nachkaufen?, Preis …"></textarea>
+
+      <button type="button" class="danger" id="tDel" style="margin-top:16px;width:100%" hidden>Diese Verkostung löschen</button>
+    </div>
   </main>
   <div class="bar"><button class="primary" id="fSave">Speichern</button></div>
 </div>
@@ -232,6 +246,17 @@ main{padding:12px 16px}
     <button id="mExport">Backup exportieren</button>
     <button id="mImport">Backup importieren</button>
     <button id="mClose" class="ghost">Schließen</button>
+  </div>
+</div>
+
+<!-- NEUE VERKOSTUNG: Noten übernehmen? -->
+<div class="sheet" id="sheetT" hidden>
+  <div class="sheetbox">
+    <b>Neue Verkostung</b>
+    <div class="hint" style="margin-top:0">Bewertung, Texte und Anlass beginnen leer. Wie sollen die Noten starten?</div>
+    <button id="tCopy" class="primary">Noten der letzten Verkostung übernehmen</button>
+    <button id="tEmpty">Ohne vorausgewählte Noten beginnen</button>
+    <button id="tCancel" class="ghost">Abbrechen</button>
   </div>
 </div>
 
@@ -290,7 +315,25 @@ function saveSettings(){ try{ localStorage.setItem(SKEY, JSON.stringify(S)); ret
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(entries)); return true; }catch(e){ toast('Speichern fehlgeschlagen!'); return false; } }
 try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 
-/* Alte Einträge ins neue Format übernehmen: Gaumen -> Geschmack, Geschmacks-Auswahl -> Geschmacksnoten */
+/* ---------- Datenmodell: ein Whisky mit mehreren Verkostungen ---------- */
+const LEGACY_T_KEYS = ['date','place','rating','bonus','noseNotes','tasteNotes','finishNotes','nose','taste','finish','notes'];
+function newTasting(date){
+  return {id:uid(),date:date||'',occasion:'',rating:0,bonus:false,noseNotes:[],tasteNotes:[],finishNotes:[],nose:'',taste:'',finish:'',notes:''};
+}
+function normalizeTasting(t){
+  if(!t.id) t.id=uid();
+  t.date = typeof t.date==='string' ? t.date : '';
+  t.occasion = typeof t.occasion==='string' ? t.occasion : '';
+  t.rating = +t.rating>0 ? Math.min(5,+t.rating) : 0;
+  t.bonus = !!t.bonus;
+  TABS.forEach(x=>{
+    t[x.notes] = Array.isArray(t[x.notes]) ? t[x.notes].filter(n=>typeof n==='string') : [];
+    t[x.txt] = typeof t[x.txt]==='string' ? t[x.txt] : '';
+  });
+  t.notes = typeof t.notes==='string' ? t.notes : '';
+}
+/* Alte Einträge übernehmen: Gaumen -> Geschmack, Geschmacks-Auswahl -> Geschmacksnoten,
+   Datum/Bewertung/Noten/Texte -> erste Verkostung, "Ort / Anlass" -> "Notiz zum Anlass" */
 function normalizeEntry(e){
   let ch=false;
   if(e.palate!==undefined){
@@ -299,25 +342,36 @@ function normalizeEntry(e){
   }
   if(e.flavors!==undefined){
     if(!Array.isArray(e.tasteNotes)) e.tasteNotes=[];
-    (Array.isArray(e.flavors)?e.flavors:[]).forEach(f=>{ if(!e.tasteNotes.includes(f)) e.tasteNotes.push(f); });
+    (Array.isArray(e.flavors)?e.flavors:[]).forEach(f=>{ if(typeof f==='string' && !e.tasteNotes.includes(f)) e.tasteNotes.push(f); });
     delete e.flavors; ch=true;
   }
-  TABS.forEach(t=>{ if(!Array.isArray(e[t.notes])) e[t.notes]=[]; else e[t.notes]=e[t.notes].filter(x=>typeof x==='string'); });
+  if(!Array.isArray(e.tastings)){
+    e.tastings=[{id:uid(),date:e.date||'',occasion:e.place||'',rating:e.rating,bonus:e.bonus,
+      noseNotes:e.noseNotes,tasteNotes:e.tasteNotes,finishNotes:e.finishNotes,
+      nose:e.nose,taste:e.taste,finish:e.finish,notes:e.notes}];
+    LEGACY_T_KEYS.forEach(k=>{ delete e[k]; });
+    ch=true;
+  }
+  e.tastings=e.tastings.filter(x=>x && typeof x==='object');
+  e.tastings.forEach(normalizeTasting);
+  if(!e.tastings.length) e.tastings.push(newTasting(''));
   return ch;
 }
 function load(){
   let raw=null; try{ raw=localStorage.getItem(KEY); }catch(e){}
   let d=[]; try{ const p=JSON.parse(raw); if(Array.isArray(p)) d=p.filter(x=>x&&typeof x==='object'); }catch(e){}
-  const needs=d.some(e=>e.palate!==undefined||e.flavors!==undefined);
-  if(needs && raw){ try{ if(!localStorage.getItem(KEY+'-backup-vor-update')) localStorage.setItem(KEY+'-backup-vor-update',raw); }catch(e){} }
+  const needs=d.some(e=>!Array.isArray(e.tastings));
+  if(needs && raw){ try{ if(!localStorage.getItem(KEY+'-backup-vor-verkostungen')) localStorage.setItem(KEY+'-backup-vor-verkostungen',raw); }catch(e){} }
   let ch=false; d.forEach(e=>{ if(normalizeEntry(e)) ch=true; });
   return {d,ch};
 }
+function sortedT(e){ return [...e.tastings].sort((a,b)=>(b.date||'').localeCompare(a.date||'')); }
+function latestT(e){ return sortedT(e)[0]; }
 
 let S = loadSettings();
 const L0 = load();
 let entries = L0.d;
-let cur = null, detailId = null, curTab = 'nose';
+let cur = null, curT = null, detailId = null, detailT = null, curTab = 'nose';
 let openG = {nose:new Set(),taste:new Set(),finish:new Set()};
 let addOpen = null;
 
@@ -330,9 +384,9 @@ function noteMap(){
 }
 function ensureNotesKnown(){
   const map=noteMap(); let ch=false;
-  entries.forEach(e=>TABS.forEach(t=>(e[t.notes]||[]).forEach(n=>{
+  entries.forEach(e=>e.tastings.forEach(ts=>TABS.forEach(t=>(ts[t.notes]||[]).forEach(n=>{
     if(!map.has(n)){ S.custom.push({name:n,emoji:'',group:'Sonstiges'}); map.set(n,{}); ch=true; }
-  })));
+  }))));
   if(ch) saveSettings();
   return ch;
 }
@@ -386,18 +440,18 @@ function buildStarPicker(){
     const r=st.getBoundingClientRect();
     const i=+st.dataset.i;
     const v = (ev.clientX - r.left) < r.width/2 ? i+0.5 : i+1;
-    cur.rating = (cur.rating===v) ? 0 : v;
+    curT.rating = (curT.rating===v) ? 0 : v;
     paintPicker();
   };
 }
 function paintPicker(){
   document.querySelectorAll('#starPick .st').forEach(st=>{
-    const i=+st.dataset.i; st.querySelector('.fill').style.width=Math.max(0,Math.min(1,cur.rating-i))*100+'%';
+    const i=+st.dataset.i; st.querySelector('.fill').style.width=Math.max(0,Math.min(1,curT.rating-i))*100+'%';
   });
-  $('rv').textContent = cur.rating>0 ? fmt(cur.rating) : '–';
-  $('bonusBtn').classList.toggle('on',!!cur.bonus);
+  $('rv').textContent = curT.rating>0 ? fmt(curT.rating) : '–';
+  $('bonusBtn').classList.toggle('on',!!curT.bonus);
   $('bonusStar').innerHTML=`<span class="bg">${STAR}</span>`;
-  $('bonusStar').className='st bonus'+(cur.bonus?' on':'');
+  $('bonusStar').className='st bonus'+(curT.bonus?' on':'');
 }
 
 /* ---------- Noten im Formular (Reiter Nase / Geschmack / Abgang) ---------- */
@@ -406,7 +460,7 @@ function chipHTML(n,map,on){
   return `<button type="button" class="chip ${on?'on':''}" data-n="${esc(n)}">${d.emoji?`<span class="em">${esc(d.emoji)}</span>`:''}${esc(n)}</button>`;
 }
 function renderNotes(t){
-  const box=$('notes_'+t.k), sel=cur[t.notes], map=noteMap(), all=[...map.values()];
+  const box=$('notes_'+t.k), sel=curT[t.notes], map=noteMap(), all=[...map.values()];
   let h='';
   if(sel.length) h+=`<div class="sel">${sel.map(n=>chipHTML(n,map,true)).join('')}</div>`;
   else h+=`<div class="hint">Gruppe antippen, um Noten auszuwählen.</div>`;
@@ -426,7 +480,7 @@ function renderNotes(t){
 }
 function renderAllNotes(){ TABS.forEach(renderNotes); updateBadges(); }
 function updateBadges(){
-  TABS.forEach(t=>{ const n=cur[t.notes].length; $('tab_'+t.k).innerHTML=esc(t.label)+(n?` <i>${n}</i>`:''); });
+  TABS.forEach(t=>{ const n=curT[t.notes].length; $('tab_'+t.k).innerHTML=esc(t.label)+(n?` <i>${n}</i>`:''); });
 }
 function setTab(k){
   curTab=k;
@@ -450,7 +504,7 @@ function submitAdd(t){
   } else {
     S.custom.push({name,emoji,group:g}); saveSettings();
   }
-  if(!cur[t.notes].includes(use)) cur[t.notes].push(use);
+  if(!curT[t.notes].includes(use)) curT[t.notes].push(use);
   addOpen=null; renderAllNotes();
 }
 TABS.forEach(t=>{
@@ -458,7 +512,7 @@ TABS.forEach(t=>{
   box.addEventListener('click',ev=>{
     const el=ev.target.closest('button'); if(!el) return;
     if(el.dataset.n!==undefined){
-      const a=cur[t.notes], i=a.indexOf(el.dataset.n);
+      const a=curT[t.notes], i=a.indexOf(el.dataset.n);
       if(i>=0) a.splice(i,1); else a.push(el.dataset.n);
       renderNotes(t); updateBadges();
     } else if(el.dataset.g!==undefined){
@@ -514,11 +568,11 @@ function noteIcon(n,map){
   const d=map.get(n); const em=d&&d.emoji;
   return em ? `<span class="ic" title="${esc(n)}">${esc(em)}</span>` : `<span class="ic tx" title="${esc(n)}">${esc(short(n))}</span>`;
 }
-function noteRowsHTML(e){
+function noteRowsHTML(t){
   const map=noteMap(); let h='';
-  TABS.forEach(t=>{
-    const a=e[t.notes]||[]; if(!a.length) return;
-    h+=`<div class="nrow"><small>${t.label}</small><span class="ni">${a.slice(0,6).map(n=>noteIcon(n,map)).join('')}${a.length>6?`<span class="more">+${a.length-6}</span>`:''}</span></div>`;
+  TABS.forEach(x=>{
+    const a=t[x.notes]||[]; if(!a.length) return;
+    h+=`<div class="nrow"><small>${x.label}</small><span class="ni">${a.slice(0,6).map(n=>noteIcon(n,map)).join('')}${a.length>6?`<span class="more">+${a.length-6}</span>`:''}</span></div>`;
   });
   return h?`<div class="nrows">${h}</div>`:'';
 }
@@ -526,15 +580,16 @@ function renderList(){
   const q=$('q').value.trim().toLowerCase(), sort=$('sort').value;
   let arr=entries.filter(e=>{
     if(!q) return true;
-    return [e.name,e.distillery,e.region,e.type,e.year,e.place,e.nose,e.taste,e.finish,e.notes,
-      ...TABS.map(t=>(e[t.notes]||[]).join(' '))].join(' ').toLowerCase().includes(q);
+    return [e.name,e.distillery,e.region,e.type,e.year,
+      ...e.tastings.flatMap(ts=>[ts.date,fmtDate(ts.date),ts.occasion,ts.nose,ts.taste,ts.finish,ts.notes,...TABS.map(t=>(ts[t.notes]||[]).join(' '))])
+    ].join(' ').toLowerCase().includes(q);
   });
-  const score=e=>(e.rating||0)+(e.bonus?0.25:0);
+  const score=e=>{ const t=latestT(e); return (t.rating||0)+(t.bonus?0.25:0); };
   arr.sort((a,b)=>{
-    if(sort==='rating') return score(b)-score(a) || (b.date||'').localeCompare(a.date||'');
+    if(sort==='rating') return score(b)-score(a) || (latestT(b).date||'').localeCompare(latestT(a).date||'');
     if(sort==='name') return (a.name||'').localeCompare(b.name||'','de');
     if(sort==='year') return (+b.year||0)-(+a.year||0);
-    return (b.date||'').localeCompare(a.date||'') || (b.created||0)-(a.created||0);
+    return (latestT(b).date||'').localeCompare(latestT(a).date||'') || (b.created||0)-(a.created||0);
   });
   const Lb=$('list');
   if(!arr.length){
@@ -544,11 +599,14 @@ function renderList(){
     return;
   }
   Lb.innerHTML=arr.map(e=>{
+    const t=latestT(e), n=e.tastings.length;
     const meta=[e.distillery,e.region,e.year?('Jg. '+e.year):'',e.age?(e.age+' J.'):''].filter(Boolean).join(' · ');
+    const occ=(t.occasion||'').split('\n')[0].trim();
+    const foot=[fmtDate(t.date), n>1?`${n} Verkostungen`:'', occ].filter(Boolean).join(' · ');
     return `<div class="card" data-id="${esc(e.id)}">
-      <div class="cardtop"><div><h3>${esc(e.name)}</h3><div class="sub">${esc(meta)||'&nbsp;'}</div></div>${ratingHTML(e,15)}</div>
-      ${noteRowsHTML(e)}
-      <div class="sub" style="margin-top:8px">${esc(fmtDate(e.date))}${e.place?' · '+esc(e.place):''}</div>
+      <div class="cardtop"><div><h3>${esc(e.name)}</h3><div class="sub">${esc(meta)||'&nbsp;'}</div></div>${ratingHTML(t,15)}</div>
+      ${noteRowsHTML(t)}
+      <div class="sub clip" style="margin-top:8px">${esc(foot)||'&nbsp;'}</div>
     </div>`;
   }).join('');
 }
@@ -557,52 +615,136 @@ $('q').addEventListener('input',renderList);
 $('sort').addEventListener('change',renderList);
 
 /* ---------- Detail ---------- */
-function openDetail(id){
-  const e=entries.find(x=>x.id===id); if(!e) return;
+function tabSections(t,map){
+  const tag=n=>{ const d=map.get(n); return `<span class="tag">${d&&d.emoji?esc(d.emoji)+' ':''}${esc(n)}</span>`; };
+  return TABS.map(x=>{
+    const a=t[x.notes]||[], txt=t[x.txt];
+    if(!a.length && !txt) return '';
+    return `<div class="dl"><b>${x.label}</b>${a.length?`<div class="tags" style="margin-top:4px">${a.map(tag).join('')}</div>`:''}${txt?`<p style="margin-top:6px">${esc(txt)}</p>`:''}</div>`;
+  }).join('');
+}
+function renderDetail(id,tid){
+  const e=entries.find(x=>x.id===id); if(!e) return false;
   detailId=id;
+  const list=sortedT(e), t=(tid && list.find(x=>x.id===tid)) || list[0];
+  detailT=t.id;
   const map=noteMap();
   const meta=[['Destillerie',e.distillery],['Region / Land',e.region],['Art',e.type],['Jahrgang',e.year],['Alter',e.age?e.age+' Jahre':''],
-    ['Alkohol',e.abv?fmt(e.abv)+' % vol.':''],['Verkostet am',fmtDate(e.date)],['Ort / Anlass',e.place]].filter(m=>m[1]);
-  const tag=n=>{ const d=map.get(n); return `<span class="tag">${d&&d.emoji?esc(d.emoji)+' ':''}${esc(n)}</span>`; };
-  const tabSec=TABS.map(t=>{
-    const a=e[t.notes]||[], txt=e[t.txt];
-    if(!a.length && !txt) return '';
-    return `<div class="dl"><b>${t.label}</b>${a.length?`<div class="tags" style="margin-top:4px">${a.map(tag).join('')}</div>`:''}${txt?`<p style="margin-top:6px">${esc(txt)}</p>`:''}</div>`;
-  }).join('');
-  const sec=(t,v)=>v?`<div class="dl"><b>${t}</b><p>${esc(v)}</p></div>`:'';
+    ['Alkohol',e.abv?fmt(e.abv)+' % vol.':'']].filter(m=>m[1]);
+  const sec=(h,v)=>v?`<div class="dl"><b>${h}</b><p>${esc(v)}</p></div>`:'';
+  const chips=list.length>1
+    ? `<div class="dl"><b>Verkostungen (${list.length})</b><div class="chips">${list.map(x=>`<button type="button" class="chip ${x===t?'on':''}" data-tid="${esc(x.id)}">${esc(fmtDate(x.date)||'ohne Datum')}${x.rating>0?` · ${fmt(x.rating)}★`:''}${x.bonus?' ✦':''}</button>`).join('')}</div></div>`
+    : '';
   $('detail').innerHTML=`<h2>${esc(e.name)}</h2>
-    <div style="margin-top:10px">${ratingHTML(e,26)}</div>
     <div class="meta">${meta.map(m=>`<div><small>${m[0]}</small>${esc(m[1])}</div>`).join('')}</div>
-    ${tabSec}${sec('Gesamteindruck / Notizen',e.notes)}`;
-  show('vDetail');
+    ${chips}
+    <div class="tbox">
+      <div class="cardtop"><div class="sub" style="font-size:14px">${t.date?'Verkostet am '+esc(fmtDate(t.date)):'Ohne Datum'}</div>${ratingHTML(t,22)}</div>
+      ${sec('Notiz zum Anlass',t.occasion)}
+      ${tabSections(t,map)}${sec('Gesamteindruck / Notizen',t.notes)}
+    </div>`;
+  return true;
 }
+function openDetail(id,tid){ if(renderDetail(id,tid)) show('vDetail'); }
+$('detail').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-tid]'); if(!b) return;
+  const y=window.scrollY; renderDetail(detailId,b.dataset.tid); window.scrollTo(0,y);
+});
 $('dBack').onclick=()=>{ show('vList'); };
-$('dEdit').onclick=()=>openForm(detailId);
+$('dEdit').onclick=()=>openForm(detailId,detailT);
+$('dNewT').onclick=()=>{
+  const e=entries.find(x=>x.id===detailId); if(!e) return;
+  askCopy(latestT(e),mode=>{ openForm(detailId); addTasting(mode); });
+};
 $('dDel').onclick=()=>{
   const e=entries.find(x=>x.id===detailId); if(!e) return;
-  if(confirm(`„${e.name}“ wirklich löschen?`)){ entries=entries.filter(x=>x.id!==detailId); save(); renderList(); show('vList'); toast('Gelöscht'); }
+  const n=e.tastings.length;
+  if(confirm(n>1?`„${e.name}“ mit allen ${n} Verkostungen wirklich löschen?`:`„${e.name}“ wirklich löschen?`)){
+    entries=entries.filter(x=>x.id!==detailId); save(); renderList(); show('vList'); toast('Gelöscht');
+  }
 };
 
+/* ---------- Neue Verkostung: Noten übernehmen? ---------- */
+let askCb=null;
+function hasNotes(t){ return !!t && TABS.some(x=>(t[x.notes]||[]).length>0); }
+function askCopy(prev,cb){
+  if(!hasNotes(prev)){ cb('empty'); return; }   // nichts zu übernehmen -> gar nicht erst fragen
+  askCb=cb;
+  $('tCopy').textContent=`Noten der letzten Verkostung (${fmtDate(prev.date)||'ohne Datum'}) übernehmen`;
+  $('sheetT').hidden=false;
+}
+function closeSheetT(){ $('sheetT').hidden=true; askCb=null; }
+$('tCopy').onclick=()=>{ const cb=askCb; closeSheetT(); if(cb) cb('copy'); };
+$('tEmpty').onclick=()=>{ const cb=askCb; closeSheetT(); if(cb) cb('empty'); };
+$('tCancel').onclick=closeSheetT;
+$('sheetT').addEventListener('click',e=>{ if(e.target===$('sheetT')) closeSheetT(); });
+
 /* ---------- Formular ---------- */
-const FIELDS={name:'f_name',distillery:'f_dist',type:'f_type',abv:'f_abv',year:'f_year',age:'f_age',date:'f_date',place:'f_place',nose:'f_nose',taste:'f_taste',finish:'f_finish',notes:'f_notes'};
-function openForm(id){
+const FIELDS={name:'f_name',distillery:'f_dist',type:'f_type',abv:'f_abv',year:'f_year',age:'f_age'};
+function collectTasting(){
+  if(!curT) return;
+  curT.date=$('f_date').value; curT.occasion=$('f_occ').value.trim();
+  curT.nose=$('f_nose').value.trim(); curT.taste=$('f_taste').value.trim(); curT.finish=$('f_finish').value.trim();
+  curT.notes=$('f_notes').value.trim();
+}
+function loadTasting(){
+  $('f_date').value=curT.date||''; $('f_occ').value=curT.occasion||'';
+  $('f_nose').value=curT.nose||''; $('f_taste').value=curT.taste||''; $('f_finish').value=curT.finish||'';
+  $('f_notes').value=curT.notes||'';
+  openG={nose:new Set(),taste:new Set(),finish:new Set()}; addOpen=null;
+  buildStarPicker(); paintPicker(); renderAllNotes(); setTab('nose');
+}
+function renderTChips(){
+  const list=sortedT(cur);
+  $('tchips').innerHTML=list.map(ts=>`<button type="button" class="chip ${ts===curT?'on':''}" data-tid="${esc(ts.id)}">${esc(fmtDate(ts.date)||'ohne Datum')}</button>`).join('')
+    +`<button type="button" class="chip add" data-newt="1">＋ Neue Verkostung</button>`;
+  $('tDel').hidden = cur.tastings.length<2;
+}
+function addTasting(mode){
+  collectTasting();
+  const prev=sortedT(cur)[0];
+  const nt=newTasting(today());
+  if(mode==='copy' && prev) TABS.forEach(t=>{ nt[t.notes]=[...prev[t.notes]]; });
+  cur.tastings.push(nt); curT=nt;
+  loadTasting(); renderTChips();
+  window.scrollTo({top:Math.max(0,$('tchips').getBoundingClientRect().top+window.scrollY-80),behavior:'smooth'});
+  toast(mode==='copy'?'Neue Verkostung – Noten übernommen':'Neue Verkostung angelegt');
+}
+$('tchips').addEventListener('click',ev=>{
+  const b=ev.target.closest('button'); if(!b) return;
+  if(b.dataset.tid!==undefined){
+    const t=cur.tastings.find(x=>x.id===b.dataset.tid); if(!t || t===curT) return;
+    collectTasting(); curT=t; loadTasting(); renderTChips();
+  } else if(b.dataset.newt!==undefined){
+    collectTasting(); askCopy(sortedT(cur)[0],addTasting);
+  }
+});
+$('f_date').addEventListener('change',()=>{ if(!curT) return; curT.date=$('f_date').value; renderTChips(); });
+$('tDel').onclick=()=>{
+  if(cur.tastings.length<2) return;
+  collectTasting();
+  if(!confirm(`Verkostung vom ${fmtDate(curT.date)||'(ohne Datum)'} wirklich löschen?\nDie Änderung gilt, sobald du speicherst.`)) return;
+  cur.tastings=cur.tastings.filter(x=>x!==curT);
+  curT=sortedT(cur)[0]; loadTasting(); renderTChips();
+  toast('Verkostung entfernt – zum Übernehmen speichern');
+};
+function openForm(id,tid){
   const e = id ? entries.find(x=>x.id===id) : null;
-  cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,rating:0,bonus:false,date:today()};
-  cur.rating=cur.rating||0;
-  TABS.forEach(t=>{ if(!Array.isArray(cur[t.notes])) cur[t.notes]=[]; });
+  cur = e ? JSON.parse(JSON.stringify(e)) : {id:null,tastings:[newTasting(today())]};
+  curT = (tid && cur.tastings.find(x=>x.id===tid)) || sortedT(cur)[0];
   for(const [k,el] of Object.entries(FIELDS)) $(el).value = cur[k]==null?'':cur[k];
   buildRegionSelect(cur.region||''); $('newRegionRow').hidden=true; $('f_newRegion').value='';
   $('fTitle').textContent = e?'Eintrag bearbeiten':'Neuer Eintrag';
-  openG={nose:new Set(),taste:new Set(),finish:new Set()}; addOpen=null;
-  buildStarPicker(); paintPicker(); renderAllNotes(); setTab('nose');
+  loadTasting(); renderTChips();
   show('vForm');
   if(!e) setTimeout(()=>$('f_name').focus(),50);
 }
 $('btnNew').onclick=()=>openForm(null);
 $('fBack').onclick=()=>{ if(cur&&cur.id) show('vDetail'); else show('vList'); };
-$('rateClear').onclick=()=>{ cur.rating=0; cur.bonus=false; paintPicker(); };
-$('bonusBtn').onclick=()=>{ cur.bonus=!cur.bonus; paintPicker(); };
+$('rateClear').onclick=()=>{ curT.rating=0; curT.bonus=false; paintPicker(); };
+$('bonusBtn').onclick=()=>{ curT.bonus=!curT.bonus; paintPicker(); };
 $('fSave').onclick=()=>{
+  collectTasting();
   const name=$('f_name').value.trim();
   if(!name){ toast('Bitte einen Namen eingeben'); $('f_name').focus(); return; }
   const o={...cur};
@@ -614,10 +756,10 @@ $('fSave').onclick=()=>{
     if(reg && !KNOWN_REGIONS.has(reg) && !S.regions.includes(reg)){ S.regions.push(reg); saveSettings(); }
   }
   o.region=reg;
-  delete o.palate; delete o.flavors;
+  o.tastings=sortedT(cur);
   if(o.id){ entries=entries.map(x=>x.id===o.id?{...o,updated:Date.now()}:x); }
   else { o.id=uid(); o.created=Date.now(); entries.push(o); }
-  if(save()){ renderList(); toast('Gespeichert'); openDetail(o.id); }
+  if(save()){ renderList(); toast('Gespeichert'); openDetail(o.id,curT.id); }
 };
 
 /* ---------- Verwaltung: Noten & Regionen ---------- */
@@ -652,10 +794,10 @@ $('manage').addEventListener('click',ev=>{
   else if(d.showall!==undefined){ S.hidden=[]; saveSettings(); renderManage(); }
   else if(d.del!==undefined){
     const name=d.del;
-    const cnt=entries.filter(e=>TABS.some(t=>(e[t.notes]||[]).includes(name))).length;
+    const cnt=entries.filter(e=>e.tastings.some(ts=>TABS.some(t=>(ts[t.notes]||[]).includes(name)))).length;
     if(!confirm(`Eigene Note „${name}“ löschen?`+(cnt?`\nSie wird aus ${cnt} gespeicherten ${cnt===1?'Eintrag':'Einträgen'} entfernt.`:''))) return;
     S.custom=S.custom.filter(c=>c.name!==name);
-    entries.forEach(e=>TABS.forEach(t=>{ e[t.notes]=(e[t.notes]||[]).filter(n=>n!==name); }));
+    entries.forEach(e=>e.tastings.forEach(ts=>TABS.forEach(t=>{ ts[t.notes]=(ts[t.notes]||[]).filter(n=>n!==name); })));
     saveSettings(); save(); renderManage(); renderList(); toast('Gelöscht');
   }
   else if(d.delreg!==undefined){ S.regions=S.regions.filter(r=>r!==d.delreg); saveSettings(); renderManage(); }
@@ -678,7 +820,7 @@ $('mExport').onclick=()=>{ closeSheet(); exportData(); };
 $('mImport').onclick=()=>{ closeSheet(); $('importFile').click(); };
 
 function exportData(){
-  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:2,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:3,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
   const name=`whisky-logbuch-${today()}.json`;
   try{
     const f=new File([blob],name,{type:'application/json'});
@@ -719,6 +861,7 @@ $('importFile').addEventListener('change',ev=>{
 history.replaceState({v:1},'');
 window.addEventListener('popstate',()=>{
   history.pushState({v:1},'');
+  if(!$('sheetT').hidden){ closeSheetT(); return; }
   if(!$('sheet').hidden){ closeSheet(); return; }
   if(!$('vList').classList.contains('active')){ show('vList'); renderList(); }
 });
