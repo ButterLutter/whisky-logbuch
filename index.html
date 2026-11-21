@@ -107,7 +107,7 @@ main{padding:12px 16px}
 .meta div{font-size:14px}.meta small{display:block;color:var(--muted);font-size:12px}
 /* Menü-Sheet */
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:flex;align-items:flex-end}
-.sheetbox{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.sheetbox{width:100%;background:var(--card);border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;max-height:92vh;overflow:auto}
 .sheetbox button{padding:14px}
 /* Verwaltung */
 .mgroup{margin-top:18px}
@@ -125,6 +125,28 @@ main{padding:12px 16px}
 .sect .opt{color:var(--muted);text-transform:none;letter-spacing:0;font-size:12px}
 .matrow{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:rgba(255,255,255,.015)}
 .matrow .row button{flex:none;padding:10px 14px}
+/* Freunde, Teilen, Vergleich, Kommentare */
+.switch{width:52px;height:30px;border-radius:999px;padding:0;position:relative;flex:none;background:var(--card2)}
+.switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:left .15s}
+.switch.on{background:rgba(224,160,48,.3);border-color:var(--amber)}
+.switch.on i{left:25px;background:var(--amber)}
+.note{border-color:var(--amber)}
+.fr{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.fr button{flex:none;padding:6px 10px;font-size:14px}
+.cmpt{font-size:13px;color:var(--amber);text-transform:uppercase;letter-spacing:.5px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.cmpc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
+.cmpc>b{display:block;font-size:13px;color:var(--amber);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmpc .rating{display:block;text-align:left;white-space:normal}
+.cmpl{font-size:11px;color:var(--muted);margin-top:8px;text-transform:uppercase;letter-spacing:.4px}
+.cm{border-top:1px solid var(--line);padding:8px 0}
+.cmh{display:flex;gap:8px;align-items:center}
+.cmh b{font-size:14px}
+.cmh .x{margin-left:auto;padding:2px 9px}
+.cm p{margin:4px 0 0;white-space:pre-wrap;line-height:1.45;overflow-wrap:anywhere}
+.qrbox{background:#fff;border-radius:14px;padding:6px;width:min(72vw,280px);margin:2px auto 0}
+.qrbox svg{display:block;width:100%;height:auto}
+.code{font:700 19px/1.3 ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;background:var(--card2);border:1px dashed var(--amber);border-radius:10px;padding:12px;text-align:center;margin-top:8px;user-select:all}
 </style>
 </head>
 <body>
@@ -141,7 +163,7 @@ main{padding:12px 16px}
         <option value="name">Name A–Z</option>
         <option value="year">Jahrgang</option>
       </select>
-      <button id="btnMenu" class="ghost" aria-label="Menü">⋯</button>
+      <button id="btnFriends" class="ghost" aria-label="Freunde">👥</button><button id="btnMenu" class="ghost" aria-label="Menü">⋯</button>
     </div>
   </header>
   <main id="list"></main>
@@ -152,6 +174,7 @@ main{padding:12px 16px}
 <div id="vDetail" class="view">
   <header><div class="row"><button class="ghost" id="dBack">← Zurück</button></div></header>
   <main id="detail" class="detail"></main>
+  <main id="social" class="detail" style="padding-top:0"></main>
   <div class="bar"><button class="danger" id="dDel">Löschen</button><button id="dNewT">＋ Verkostung</button><button class="primary" id="dEdit">Bearbeiten</button></div>
 </div>
 
@@ -240,6 +263,19 @@ main{padding:12px 16px}
   <div class="bar"><button class="primary" id="fSave">Speichern</button></div>
 </div>
 
+<!-- FREUNDE -->
+<div id="vFriends" class="view">
+  <header><div class="row"><button class="ghost" id="frBack">← Zurück</button><b style="margin-left:auto">Freunde</b></div></header>
+  <main id="friends"></main>
+</div>
+
+<!-- GETEILTER WHISKY -->
+<div id="vShared" class="view">
+  <header><div class="row"><button class="ghost" id="sBack">← Zurück</button></div></header>
+  <main id="shared" class="detail"></main>
+  <main id="sharedCm" class="detail" style="padding-top:0"></main>
+</div>
+
 <!-- VERWALTUNG -->
 <div id="vManage" class="view">
   <header><div class="row"><button class="ghost" id="mBack">← Zurück</button><b style="margin-left:auto">Noten, Regionen &amp; Fässer</b></div></header>
@@ -249,6 +285,7 @@ main{padding:12px 16px}
 <!-- MENÜ -->
 <div class="sheet" id="sheet" hidden>
   <div class="sheetbox">
+    <button id="mFriends">👥 Freunde &amp; Teilen</button>
     <button id="mManage">Noten, Regionen &amp; Fässer verwalten</button>
     <button id="mExport">Backup exportieren</button>
     <button id="mImport">Backup importieren</button>
@@ -264,6 +301,29 @@ main{padding:12px 16px}
     <button id="tCopy" class="primary">Noten der letzten Verkostung übernehmen</button>
     <button id="tEmpty">Ohne vorausgewählte Noten beginnen</button>
     <button id="tCancel" class="ghost">Abbrechen</button>
+  </div>
+</div>
+
+<!-- FREUND EINLADEN (QR) -->
+<div class="sheet" id="sheetI" hidden>
+  <div class="sheetbox">
+    <b>Freund einladen</b>
+    <div class="qrbox" id="qrBox"></div>
+    <div class="hint" id="qrHint" style="margin-top:0"></div>
+    <button id="iShare" hidden>Link teilen</button>
+    <button id="iClose" class="ghost">Schließen</button>
+  </div>
+</div>
+
+<!-- EINLADUNG ANNEHMEN -->
+<div class="sheet" id="sheetA" hidden>
+  <div class="sheetbox">
+    <b>Einladung annehmen</b>
+    <div class="hint" id="aHint" style="margin-top:0"></div>
+    <input id="aCode" placeholder="Einladungslink oder -code einfügen" autocomplete="off" hidden>
+    <button id="aOk" class="primary">Annehmen</button>
+    <button id="aCopy" hidden>Link kopieren (für die installierte App)</button>
+    <button id="aCancel" class="ghost">Abbrechen</button>
   </div>
 </div>
 
@@ -378,6 +438,7 @@ function normalizeEntry(e){
   e.maturation = Array.isArray(e.maturation)
     ? e.maturation.filter(r=>r && typeof r==='object').map(r=>({type:typeof r.type==='string'?r.type:'',cask:typeof r.cask==='string'?r.cask:'',size:typeof r.size==='string'?r.size:''}))
     : [];
+  e.shared=!!e.shared; e.remoteId=typeof e.remoteId==='string'?e.remoteId:''; e.syncDirty=!!e.syncDirty;
   return ch;
 }
 function load(){
@@ -628,7 +689,7 @@ function renderList(){
     const occ=(t.occasion||'').split('\n')[0].trim();
     const foot=[fmtDate(t.date), n>1?`${n} Verkostungen`:'', occ].filter(Boolean).join(' · ');
     return `<div class="card" data-id="${esc(e.id)}">
-      <div class="cardtop"><div><h3>${esc(e.name)}</h3><div class="sub">${esc(meta)||'&nbsp;'}</div></div>${ratingHTML(t,15)}</div>
+      <div class="cardtop"><div><h3>${esc(e.name)}${e.shared?' <span title="Mit Freunden geteilt">👥</span>':''}</h3><div class="sub">${esc(meta)||'&nbsp;'}</div></div>${ratingHTML(t,15)}</div>
       ${noteRowsHTML(t)}
       <div class="sub clip" style="margin-top:8px">${esc(foot)||'&nbsp;'}</div>
     </div>`;
@@ -674,7 +735,7 @@ function renderDetail(id,tid){
     </div>`;
   return true;
 }
-function openDetail(id,tid){ if(renderDetail(id,tid)) show('vDetail'); }
+function openDetail(id,tid){ if(renderDetail(id,tid)){ show('vDetail'); renderSocial(); } }
 $('detail').addEventListener('click',ev=>{
   const b=ev.target.closest('[data-tid]'); if(!b) return;
   const y=window.scrollY; renderDetail(detailId,b.dataset.tid); window.scrollTo(0,y);
@@ -689,7 +750,8 @@ $('dDel').onclick=()=>{
   const e=entries.find(x=>x.id===detailId); if(!e) return;
   const n=e.tastings.length;
   if(confirm(n>1?`„${e.name}“ mit allen ${n} Verkostungen wirklich löschen?`:`„${e.name}“ wirklich löschen?`)){
-    entries=entries.filter(x=>x.id!==detailId); save(); renderList(); show('vList'); toast('Gelöscht');
+    if(e.shared && hasAcct()){ A.pendingDel=[...(A.pendingDel||[]),e.id]; saveAuth(); }
+    entries=entries.filter(x=>x.id!==detailId); save(); renderList(); show('vList'); toast('Gelöscht'); syncPending();
   }
 };
 
@@ -852,9 +914,10 @@ $('fSave').onclick=()=>{
   o.region=reg;
   o.maturation=cur.maturation.filter(r=>r.type||r.cask||r.size).map(r=>({type:r.type||'',cask:r.cask||'',size:r.size||''}));
   o.tastings=sortedT(cur);
+  o.shared=!!o.shared; if(o.shared) o.syncDirty=true;
   if(o.id){ entries=entries.map(x=>x.id===o.id?{...o,updated:Date.now()}:x); }
   else { o.id=uid(); o.created=Date.now(); entries.push(o); }
-  if(save()){ renderList(); toast('Gespeichert'); openDetail(o.id,curT.id); }
+  if(save()){ renderList(); toast('Gespeichert'); openDetail(o.id,curT.id); if(o.shared) syncPending().then(()=>{ if(detailId===o.id) renderSocial(); }); }
 };
 
 /* ---------- Verwaltung: Noten & Regionen ---------- */
@@ -927,7 +990,7 @@ $('mExport').onclick=()=>{ closeSheet(); exportData(); };
 $('mImport').onclick=()=>{ closeSheet(); $('importFile').click(); };
 
 function exportData(){
-  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:4,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'whisky-logbuch',version:5,exported:new Date().toISOString(),entries,settings:S},null,2)],{type:'application/json'});
   const name=`whisky-logbuch-${today()}.json`;
   try{
     const f=new File([blob],name,{type:'application/json'});
@@ -959,21 +1022,570 @@ $('importFile').addEventListener('change',ev=>{
         if(!e || typeof e!=='object' || !e.name) return;
         if(!e.id) e.id=uid();
         if(have.has(e.id)) return;
+        e.remoteId=''; e.syncDirty=!!e.shared;
         normalizeEntry(e); entries.push(e); have.add(e.id); n++;
       });
-      ensureNotesKnown(); ensureMatKnown(); save(); renderList(); toast(n+' Einträge importiert');
+      ensureNotesKnown(); ensureMatKnown(); save(); renderList(); toast(n+' Einträge importiert'); syncPending();
     }catch(e){ toast('Datei konnte nicht gelesen werden'); }
     ev.target.value='';
   };
   r.readAsText(f);
 });
 
+/* ---------- QR-Code (Byte-Modus, Fehlerkorrektur M, Version 1–10), ohne Bibliothek ---------- */
+/* QR-START */
+function qrMatrix(text){
+  const bytes=Array.from(new TextEncoder().encode(text));
+  const ECC=[0,10,16,26,18,24,16,18,22,22,26], BLK=[0,1,1,1,2,2,4,4,4,5,5];
+  const raw=v=>{ let r=(16*v+128)*v+64; if(v>=2){ const n=Math.floor(v/7)+2; r-=(25*n-10)*n-55; if(v>=7) r-=36; } return r; };
+  const capBits=v=>(Math.floor(raw(v)/8)-ECC[v]*BLK[v])*8;
+  let ver=1;
+  for(;;ver++){
+    if(ver>10) throw new Error('QR: Text zu lang');
+    if(4+(ver<10?8:16)+bytes.length*8<=capBits(ver)) break;
+  }
+  const size=ver*4+17;
+  const bits=[]; const put=(v,n)=>{ for(let i=n-1;i>=0;i--) bits.push((v>>>i)&1); };
+  put(4,4); put(bytes.length,ver<10?8:16); bytes.forEach(b=>put(b,8));
+  const cap=capBits(ver);
+  put(0,Math.min(4,cap-bits.length)); put(0,(8-bits.length%8)%8);
+  for(let p=0xEC;bits.length<cap;p^=0xEC^0x11) put(p,8);
+  const data=[]; for(let i=0;i<bits.length;i+=8){ let b=0; for(let j=0;j<8;j++) b=(b<<1)|bits[i+j]; data.push(b); }
+  /* Reed-Solomon */
+  const mul=(x,y)=>{ let z=0; for(let i=7;i>=0;i--){ z=(z<<1)^((z>>>7)*0x11D); z^=((y>>>i)&1)*x; } return z; };
+  const nb=BLK[ver], el=ECC[ver], rawCw=Math.floor(raw(ver)/8), nShort=nb-rawCw%nb, shortLen=Math.floor(rawCw/nb);
+  const div=(()=>{ const r=new Array(el).fill(0); r[el-1]=1; let root=1;
+    for(let i=0;i<el;i++){ for(let j=0;j<el;j++){ r[j]=mul(r[j],root); if(j+1<el) r[j]^=r[j+1]; } root=mul(root,2); } return r; })();
+  const blocks=[]; let k=0;
+  for(let i=0;i<nb;i++){
+    const dat=data.slice(k,k+shortLen-el+(i<nShort?0:1)); k+=dat.length;
+    const rem=new Array(el).fill(0);
+    dat.forEach(b=>{ const f=b^rem.shift(); rem.push(0); div.forEach((c,j)=>{ rem[j]^=mul(c,f); }); });
+    if(i<nShort) dat.push(0);
+    blocks.push(dat.concat(rem));
+  }
+  const all=[];
+  for(let i=0;i<blocks[0].length;i++) blocks.forEach((b,j)=>{ if(i!==shortLen-el||j>=nShort) all.push(b[i]); });
+  /* Muster */
+  const M=Array.from({length:size},()=>new Array(size).fill(false)), F=Array.from({length:size},()=>new Array(size).fill(false));
+  const setF=(x,y,d)=>{ M[y][x]=d; F[y][x]=true; };
+  for(let i=0;i<size;i++){ setF(6,i,i%2===0); setF(i,6,i%2===0); }
+  const finder=(cx,cy)=>{ for(let dy=-4;dy<=4;dy++) for(let dx=-4;dx<=4;dx++){ const d=Math.max(Math.abs(dx),Math.abs(dy)), x=cx+dx, y=cy+dy; if(x>=0&&x<size&&y>=0&&y<size) setF(x,y,d!==2&&d!==4); } };
+  finder(3,3); finder(size-4,3); finder(3,size-4);
+  const pos=[];
+  if(ver>1){ const n=Math.floor(ver/7)+2, step=Math.ceil((ver*4+4)/(n*2-2))*2; pos.push(6); for(let p=size-7;pos.length<n;p-=step) pos.splice(1,0,p); }
+  pos.forEach((px,i)=>pos.forEach((py,j)=>{
+    if((i===0&&j===0)||(i===0&&j===pos.length-1)||(i===pos.length-1&&j===0)) return;
+    for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++) setF(px+dx,py+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1);
+  }));
+  const fmt=mask=>{
+    const d=mask; let r=d; for(let i=0;i<10;i++) r=(r<<1)^((r>>>9)*0x537);
+    const bt=((d<<10)|r)^0x5412, g=i=>((bt>>>i)&1)!==0;
+    for(let i=0;i<=5;i++) setF(8,i,g(i)); setF(8,7,g(6)); setF(8,8,g(7)); setF(7,8,g(8));
+    for(let i=9;i<15;i++) setF(14-i,8,g(i));
+    for(let i=0;i<8;i++) setF(size-1-i,8,g(i));
+    for(let i=8;i<15;i++) setF(8,size-15+i,g(i));
+    setF(8,size-8,true);
+  };
+  fmt(0);
+  if(ver>=7){ let r=ver; for(let i=0;i<12;i++) r=(r<<1)^((r>>>11)*0x1F25);
+    const bt=(ver<<12)|r; for(let i=0;i<18;i++){ const c=((bt>>>i)&1)!==0, a=size-11+i%3, b=Math.floor(i/3); setF(a,b,c); setF(b,a,c); } }
+  /* Daten platzieren */
+  let bi=0;
+  for(let right=size-1;right>=1;right-=2){
+    if(right===6) right=5;
+    for(let vert=0;vert<size;vert++) for(let j=0;j<2;j++){
+      const x=right-j, up=((right+1)&2)===0, y=up?size-1-vert:vert;
+      if(!F[y][x]&&bi<all.length*8){ M[y][x]=((all[bi>>>3]>>>(7-(bi&7)))&1)!==0; bi++; }
+    }
+  }
+  /* Maske */
+  const mask=m=>{ for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    let inv;
+    switch(m){
+      case 0: inv=(x+y)%2===0; break;
+      case 1: inv=y%2===0; break;
+      case 2: inv=x%3===0; break;
+      case 3: inv=(x+y)%3===0; break;
+      case 4: inv=(Math.floor(x/3)+Math.floor(y/2))%2===0; break;
+      case 5: inv=x*y%2+x*y%3===0; break;
+      case 6: inv=(x*y%2+x*y%3)%2===0; break;
+      default: inv=((x+y)%2+x*y%3)%2===0;
+    }
+    if(!F[y][x]&&inv) M[y][x]=!M[y][x];
+  } };
+  const penalty=()=>{
+    let res=0;
+    const addH=(run,h)=>{ if(h[0]===0) run+=size; h.pop(); h.unshift(run); };
+    const cnt=h=>{ const n=h[1]; const core=n>0&&h[2]===n&&h[3]===n*3&&h[4]===n&&h[5]===n;
+      return (core&&h[0]>=n*4&&h[6]>=n?1:0)+(core&&h[6]>=n*4&&h[0]>=n?1:0); };
+    const term=(col,run,h)=>{ if(col){ addH(run,h); run=0; } run+=size; addH(run,h); return cnt(h); };
+    for(let pass=0;pass<2;pass++) for(let a=0;a<size;a++){
+      let col=false, run=0; const h=[0,0,0,0,0,0,0];
+      for(let b=0;b<size;b++){
+        const v=pass?M[b][a]:M[a][b];
+        if(v===col){ run++; if(run===5) res+=3; else if(run>5) res++; }
+        else { addH(run,h); if(!col) res+=cnt(h)*40; col=v; run=1; }
+      }
+      res+=term(col,run,h)*40;
+    }
+    for(let y=0;y<size-1;y++) for(let x=0;x<size-1;x++){ const c=M[y][x]; if(c===M[y][x+1]&&c===M[y+1][x]&&c===M[y+1][x+1]) res+=3; }
+    let dark=0; M.forEach(r=>r.forEach(v=>{ if(v) dark++; })); const tot=size*size;
+    return res+(Math.ceil(Math.abs(dark*20-tot*10)/tot)-1)*10;
+  };
+  let best=0, bp=Infinity;
+  for(let m=0;m<8;m++){ mask(m); fmt(m); const p=penalty(); if(p<bp){ bp=p; best=m; } mask(m); }
+  mask(best); fmt(best);
+  return M;
+}
+function qrSvg(text){
+  const M=qrMatrix(text), n=M.length, b=4; let d='';
+  M.forEach((row,y)=>{ let x=0; while(x<n){ if(row[x]){ let w=1; while(x+w<n&&row[x+w]) w++; d+=`M${x+b} ${y+b}h${w}v1h-${w}z`; x+=w; } else x++; } });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+2*b} ${n+2*b}" shape-rendering="crispEdges" role="img" aria-label="QR-Code"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+/* QR-END */
+
+/* =====================================================================
+   FREUNDE: Konto, Einladung per QR, Teilen, Vergleichen, Kommentare
+   (Supabase per REST – ohne Bibliothek; alles Lokale bleibt lokal)
+   ===================================================================== */
+const SB_URL='https://jtbglpdmemjjcuctocdz.supabase.co';
+const SB_KEY='sb_publishable_mbXyiiJ2HdRdyA0xqp8_gw_Rp5DUOYe';
+const AKEY='whisky-logbuch-auth-v1';
+
+function loadAuth(){ try{ const a=JSON.parse(localStorage.getItem(AKEY)); if(a && typeof a==='object') return a; }catch(e){} return {}; }
+let A=loadAuth();   // {access,refresh,exp,uid,name,code,recoverySet,pendingDel[]}
+function saveAuth(){ try{ localStorage.setItem(AKEY,JSON.stringify(A)); }catch(e){} }
+const hasAcct=()=>!!(A.uid && A.name && A.refresh);
+
+/* ---------- Netzwerk ---------- */
+async function http(url,opt){
+  const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),15000);
+  let res, txt;
+  try{ res=await fetch(url,{...opt,signal:ctl.signal}); txt=await res.text(); }
+  catch(e){ throw Object.assign(new Error('Keine Verbindung zum Server'),{offline:true}); }
+  finally{ clearTimeout(to); }
+  let body=null; if(txt){ try{ body=JSON.parse(txt); }catch(e){ body=txt; } }
+  if(!res.ok){
+    const msg=(body && (body.message||body.msg||body.error_description||body.error)) || ('Fehler '+res.status);
+    throw Object.assign(new Error(String(msg)),{status:res.status,body});
+  }
+  return body;
+}
+const authHeaders=tok=>{ const h={'apikey':SB_KEY,'Content-Type':'application/json'}; if(tok) h['Authorization']='Bearer '+tok; return h; };
+function setSession(r){
+  A.access=r.access_token; A.refresh=r.refresh_token;
+  A.exp=r.expires_at || (Math.floor(Date.now()/1000)+(r.expires_in||3600));
+  if(r.user && r.user.id) A.uid=r.user.id;
+  saveAuth();
+}
+async function anonSignup(){
+  const r=await http(SB_URL+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify({data:{}})});
+  setSession(r);
+}
+let tokenP=null;
+async function token(){
+  if(!A.refresh) throw new Error('Kein Konto');
+  if(A.access && (A.exp||0)>Date.now()/1000+60) return A.access;
+  if(!tokenP) tokenP=http(SB_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:authHeaders(),body:JSON.stringify({refresh_token:A.refresh})})
+    .then(r=>{ setSession(r); return A.access; })
+    .catch(e=>{ if(e.status>=400 && e.status<500) e.authLost=true; throw e; })
+    .finally(()=>{ tokenP=null; });
+  return tokenP;
+}
+async function api(method,path,body,prefer){
+  const h=authHeaders(await token()); if(prefer) h['Prefer']=prefer;
+  return http(SB_URL+'/rest/v1/'+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body)});
+}
+const rpc=(fn,args)=>api('POST','rpc/'+fn,args||{});
+function errMsg(e){
+  if(e.offline) return 'Keine Verbindung zum Server';
+  const m=String(e.message||'');
+  if(/Einladung ungueltig/.test(m)) return 'Einladung ungültig oder abgelaufen';
+  if(/selbst einladen/.test(m)) return 'Du kannst dich nicht selbst einladen';
+  if(/Code ungueltig/.test(m)) return 'Code ungültig';
+  if(/schon ein Profil/.test(m)) return 'Dieses Gerät hat schon ein Konto';
+  if(/Could not find the function|schema cache|does not exist/.test(m)) return 'Der Server ist noch nicht vollständig eingerichtet (SQL-Nachtrag fehlt)';
+  if(e.authLost) return 'Dein Konto auf diesem Gerät ist nicht mehr gültig';
+  return m||'Unbekannter Fehler';
+}
+
+/* ---------- Konto ---------- */
+function newCode(){
+  const al='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', b=new Uint8Array(16); crypto.getRandomValues(b);
+  return Array.from(b,x=>al[x%32]).join('').replace(/(.{4})(?=.)/g,'$1-');
+}
+function canonCode(s){ const t=String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); return t.length===16?t.replace(/(.{4})(?=.)/g,'$1-'):t; }
+async function ensureRecovery(){
+  if(A.recoverySet || !A.code || !A.uid) return;
+  try{ await rpc('set_recovery_code',{p_code:A.code}); A.recoverySet=true; saveAuth(); }catch(e){}
+}
+async function createAccount(name){
+  if(!A.refresh) await anonSignup();
+  try{ await api('POST','profiles',{id:A.uid,display_name:name},'return=minimal'); }
+  catch(e){ if(e.status!==409) throw e; await api('PATCH','profiles?id=eq.'+A.uid,{display_name:name},'return=minimal'); }
+  A.name=name; A.code=A.code||newCode(); A.recoverySet=false; saveAuth();
+  await ensureRecovery();
+}
+async function recoverAccount(code){
+  const c=canonCode(code);
+  if(!/^[A-Z2-9]{4}(-[A-Z2-9]{4}){3}$/.test(c)) throw new Error('Code ungueltig');
+  if(!A.refresh) await anonSignup();
+  const r=await rpc('recover_account',{p_code:c});
+  A.name=(r&&r.display_name)||'Ich'; A.code=c; A.recoverySet=true; saveAuth();
+  entries.forEach(e=>{ if(e.shared) e.syncDirty=true; }); save();
+}
+
+/* ---------- Abgleich gleicher Whiskys ---------- */
+const DROPW=new Set(['jahre','jahr','jahren','years','year','old','yo','single','malt','whisky','whiskey','scotch','the']);
+function mk(name){
+  const raw=String(name||'');
+  const k=raw.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(w=>w&&!DROPW.has(w)).join(' ');
+  return (k||raw.toLowerCase().trim()).slice(0,200);
+}
+function cleanShared(d){
+  d=d && typeof d==='object' ? d : {};
+  const s=v=>typeof v==='string'?v.slice(0,3000):(typeof v==='number'?String(v):'');
+  const arr=v=>Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,60).map(x=>x.slice(0,60)):[];
+  const o={name:s(d.name),distillery:s(d.distillery),region:s(d.region),type:s(d.type),abv:s(d.abv),year:s(d.year),age:s(d.age),
+    maturation:(Array.isArray(d.maturation)?d.maturation:[]).filter(r=>r&&typeof r==='object').slice(0,6).map(r=>({type:s(r.type),cask:s(r.cask),size:s(r.size)})),
+    tastings:(Array.isArray(d.tastings)?d.tastings:[]).filter(t=>t&&typeof t==='object').slice(0,50).map(t=>{
+      const x={id:s(t.id),date:s(t.date),occasion:s(t.occasion),rating:+t.rating>0?Math.min(5,+t.rating):0,bonus:!!t.bonus,notes:s(t.notes)};
+      TABS.forEach(k=>{ x[k.notes]=arr(t[k.notes]); x[k.txt]=s(t[k.txt]); }); return x; })};
+  if(!o.tastings.length) o.tastings.push({id:'',date:'',occasion:'',rating:0,bonus:false,notes:'',noseNotes:[],tasteNotes:[],finishNotes:[],nose:'',taste:'',finish:''});
+  return o;
+}
+const latestOf=d=>[...d.tastings].sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+const sortedOf=d=>[...d.tastings].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+/* ---------- Freunde & Geteiltes laden ---------- */
+let NET={friends:[],names:new Map(),shared:[],at:0,err:'',authLost:false};
+async function refreshNet(){
+  try{
+    const [fs,ps,sh]=await Promise.all([
+      api('GET','friendships?select=user_a,user_b,created_at'),
+      api('GET','profiles?select=id,display_name'),
+      api('GET','shared_whiskys?select=id,owner,local_id,match_key,data,updated_at&owner=neq.'+A.uid+'&order=updated_at.desc')
+    ]);
+    NET.names=new Map(ps.map(p=>[p.id,p.display_name]));
+    NET.friends=fs.map(f=>{ const id=f.user_a===A.uid?f.user_b:f.user_a; return {id,since:f.created_at,name:NET.names.get(id)||'Freund'}; })
+      .sort((a,b)=>a.name.localeCompare(b.name,'de'));
+    NET.shared=sh.map(r=>({...r,d:cleanShared(r.data),name:NET.names.get(r.owner)||'Freund'}));
+    NET.at=Date.now(); NET.err=''; NET.authLost=false;
+  }catch(e){ NET.err=errMsg(e); NET.authLost=!!e.authLost; throw e; }
+}
+
+/* ---------- Teilen: Hochladen ---------- */
+function sharedPayload(e){
+  return {name:e.name,distillery:e.distillery||'',region:e.region||'',type:e.type||'',abv:e.abv||'',year:e.year||'',age:e.age||'',
+    maturation:e.maturation||[],
+    tastings:e.tastings.map(t=>({id:t.id,date:t.date,occasion:t.occasion,rating:t.rating,bonus:t.bonus,
+      noseNotes:t.noseNotes,tasteNotes:t.tasteNotes,finishNotes:t.finishNotes,nose:t.nose,taste:t.taste,finish:t.finish,notes:t.notes}))};
+}
+async function pushShared(e){
+  const rows=await api('POST','shared_whiskys?on_conflict=owner,local_id',
+    {owner:A.uid,local_id:e.id,match_key:mk(e.name),data:sharedPayload(e)},'resolution=merge-duplicates,return=representation');
+  const r=Array.isArray(rows)?rows[0]:rows;
+  if(r && r.id) e.remoteId=r.id;
+  e.syncDirty=false; save();
+}
+let syncing=false;
+async function syncPending(){
+  if(syncing || !hasAcct() || navigator.onLine===false) return;
+  syncing=true;
+  try{
+    for(const e of entries.filter(x=>x.shared && (x.syncDirty||!x.remoteId))){
+      try{ await pushShared(e); }catch(er){ if(er.offline||er.authLost) break; }
+    }
+    for(const lid of [...(A.pendingDel||[])]){
+      try{ await api('DELETE','shared_whiskys?owner=eq.'+A.uid+'&local_id=eq.'+encodeURIComponent(lid),undefined,'return=minimal');
+        A.pendingDel=A.pendingDel.filter(x=>x!==lid); saveAuth(); }
+      catch(er){ if(er.offline||er.authLost) break; }
+    }
+  } finally { syncing=false; }
+}
+
+/* ---------- Einladung ---------- */
+let PENDING_INV=null, showCode=false;
+const inviteLink=tok=>location.href.split(/[#?]/)[0].replace(/index\.html$/,'')+'#invite='+tok;
+function parseInvite(s){
+  s=String(s||'').trim();
+  const m=s.match(/invite=([0-9a-f]{32})/i) || s.match(/^([0-9a-f]{32})$/i);
+  return m?m[1].toLowerCase():null;
+}
+async function copyText(t){
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+  try{ const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;opacity:0;top:0'; document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove(); return ok; }catch(e){ return false; }
+}
+async function acceptInvite(tok){
+  const r=await rpc('accept_invite',{p_token:tok});
+  try{ await refreshNet(); }catch(e){}
+  toast(`Du bist jetzt mit ${(r&&r.display_name)||'deinem Freund'} befreundet`);
+  return r;
+}
+
+/* ---------- Ansicht: Freunde ---------- */
+const fmtDT=iso=>{ const d=new Date(iso); if(isNaN(d)) return ''; const p=n=>String(n).padStart(2,'0'); return `${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+function sharedCardHTML(r,sub){
+  const t=latestOf(r.d), meta=[r.d.distillery,r.d.region,r.d.year?('Jg. '+r.d.year):''].filter(Boolean).join(' · ');
+  return `<div class="card" data-sid="${esc(r.id)}"><div class="cardtop"><div><h3>${esc(r.d.name)}</h3><div class="sub">${esc(sub||('von '+r.name))}${meta?' · '+esc(meta):''}</div></div>${ratingHTML(t,15)}</div>${noteRowsHTML(t)}</div>`;
+}
+function renderFriends(){
+  const box=$('friends'); let h='';
+  if(!hasAcct()){
+    h+=`<div class="card"><h3>Mit Freunden teilen</h3><div class="sub" style="margin-top:6px;line-height:1.5">Lade Freunde vor Ort per QR-Code ein, teile einzelne Whiskys und vergleicht eure Bewertungen. Alles andere bleibt nur auf diesem Gerät.</div></div>`;
+    if(PENDING_INV) h+=`<div class="card note">Du hast eine Einladung erhalten. Lege ein Konto an, dann wird sie angenommen.</div>`;
+    h+=`<label for="fr_name">Dein Anzeigename (sehen deine Freunde)</label><input id="fr_name" maxlength="40" autocomplete="off" placeholder="z. B. Flo">
+      <button type="button" class="primary" data-act="create" style="width:100%;margin-top:12px">Konto anlegen</button>`;
+    if(PENDING_INV) h+=`<button type="button" data-act="copyinv" style="width:100%;margin-top:10px">Einladungslink kopieren</button><div class="hint">Hast du den Link im Browser statt in der installierten App geöffnet? Dann hat der Browser einen eigenen Speicher. Kopiere den Link und füge ihn in der installierten App unter „Einladung annehmen“ ein.</div>`;
+    h+=`<h3 class="sect">Schon ein Konto?</h3><div class="hint" style="margin-top:0">Mit deinem Wiederherstellungscode holst du Konto, Freunde und Freigaben auf dieses Gerät.</div>
+      <input id="fr_code" placeholder="XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" style="margin-top:8px">
+      <button type="button" data-act="recover" style="width:100%;margin-top:10px">Konto wiederherstellen</button>`;
+    box.innerHTML=h; return;
+  }
+  h+=`<div class="row" style="justify-content:space-between"><b style="font-size:18px">Hallo ${esc(A.name)}</b><button type="button" class="ghost" data-act="refresh">↻ Aktualisieren</button></div>`;
+  if(NET.err) h+=`<div class="card note" style="margin-top:10px">${esc(NET.err)}${NET.authLost&&A.code?`<br><button type="button" data-act="relogin" style="margin-top:8px">Mit Wiederherstellungscode neu anmelden</button>`:''}</div>`;
+  h+=`<div class="grid2" style="margin-top:12px"><button type="button" class="primary" data-act="invite">Freund einladen</button><button type="button" data-act="accept">Einladung annehmen</button></div>`;
+  h+=`<h3 class="sect">Freunde (${NET.friends.length})</h3>`;
+  h+=NET.friends.length
+    ? NET.friends.map(f=>`<div class="fr"><span class="mn">${esc(f.name)}<div class="sub">seit ${esc(fmtDate((f.since||'').slice(0,10)))}</div></span><button type="button" class="danger" data-rm="${esc(f.id)}">Entfernen</button></div>`).join('')
+    : `<div class="hint" style="margin-top:0">Noch keine Freunde. Tippe auf „Freund einladen“ und lass deinen Freund den QR-Code mit der Kamera scannen.</div>`;
+  h+=`<h3 class="sect">Von Freunden geteilt</h3>`;
+  h+=NET.shared.length ? NET.shared.map(r=>sharedCardHTML(r)).join('') : `<div class="hint" style="margin-top:0">Noch nichts geteilt. Die Freigabe stellst du im Detail eines Whiskys ein.</div>`;
+  h+=`<h3 class="sect">Konto</h3><div class="hint" style="margin-top:0;line-height:1.5">Angemeldet als <b>${esc(A.name)}</b>. Das Konto liegt nur in diesem Browser bzw. dieser App; Browser und installierte App haben getrennten Speicher. Mit dem Wiederherstellungscode holst du das Konto auf ein neues Gerät. Danach funktioniert es nur noch dort.</div>
+    <button type="button" data-act="showcode" style="margin-top:8px">${showCode?'Code verbergen':'Wiederherstellungscode anzeigen'}</button>`;
+  if(showCode) h+=`<div class="code">${esc(A.code||'–')}</div><div class="hint">Notiere dir den Code an einem sicheren Ort. Wer ihn kennt, kann dein Konto übernehmen.</div><button type="button" data-act="copycode" style="margin-top:6px">Code kopieren</button>`;
+  if(!A.recoverySet) h+=`<div class="hint" style="color:var(--danger)">Die Wiederherstellung ist noch nicht auf dem Server eingerichtet (SQL-Nachtrag fehlt oder du warst offline). Sie wird beim nächsten Aktualisieren erneut versucht.</div>`;
+  box.innerHTML=h;
+}
+async function loadFriends(){
+  if(!hasAcct()) return;
+  try{ await refreshNet(); await ensureRecovery(); syncPending(); }catch(e){}
+  if($('vFriends').classList.contains('active')) renderFriends();
+}
+function openFriends(){ show('vFriends'); renderFriends(); loadFriends(); }
+$('btnFriends').onclick=openFriends;
+$('mFriends').onclick=()=>{ closeSheet(); openFriends(); };
+$('frBack').onclick=()=>{ show('vList'); renderList(); };
+
+$('friends').addEventListener('click',async ev=>{
+  const b=ev.target.closest('button,[data-sid]'); if(!b) return;
+  if(b.dataset.sid){ openShared(b.dataset.sid,'friends'); return; }
+  if(b.dataset.rm){
+    const f=NET.friends.find(x=>x.id===b.dataset.rm); if(!f) return;
+    if(!confirm(`${f.name} als Freund entfernen?\nIhr seht dann gegenseitig keine Whiskys mehr.`)) return;
+    const [x,y]=A.uid<f.id?[A.uid,f.id]:[f.id,A.uid];
+    try{ await api('DELETE',`friendships?user_a=eq.${x}&user_b=eq.${y}`,undefined,'return=minimal'); await refreshNet(); toast('Freund entfernt'); }
+    catch(e){ toast(errMsg(e)); }
+    renderFriends(); return;
+  }
+  const act=b.dataset.act; if(!act) return;
+  if(act==='showcode'){ showCode=!showCode; renderFriends(); return; }
+  if(act==='copycode'){ toast(await copyText(A.code)?'Code kopiert':'Kopieren nicht möglich'); return; }
+  if(act==='copyinv'){ toast(await copyText(inviteLink(PENDING_INV))?'Link kopiert':'Kopieren nicht möglich'); return; }
+  if(act==='invite'){ openInvite(); return; }
+  if(act==='accept'){ openAccept(null); return; }
+  if(act==='refresh'){ b.disabled=true; await loadFriends(); renderFriends(); return; }
+  b.disabled=true;
+  try{
+    if(act==='create'){
+      const nm=($('fr_name').value||'').trim().replace(/\s+/g,' ').slice(0,40);
+      if(!nm){ toast('Bitte einen Namen eingeben'); b.disabled=false; return; }
+      await createAccount(nm); showCode=true;
+      if(PENDING_INV){ const t=PENDING_INV; PENDING_INV=null; try{ await acceptInvite(t); }catch(e){ toast(errMsg(e)); } }
+      else toast('Konto angelegt – notiere dir den Wiederherstellungscode');
+      syncPending(); loadFriends();
+    } else if(act==='recover'){
+      await recoverAccount($('fr_code').value); showCode=false; toast('Konto wiederhergestellt');
+      syncPending(); loadFriends();
+    } else if(act==='relogin'){
+      const code=A.code; A={code,pendingDel:A.pendingDel||[]}; saveAuth(); NET.err=''; NET.authLost=false;
+      await recoverAccount(code); toast('Wieder angemeldet'); syncPending(); loadFriends();
+    }
+  }catch(e){ toast(errMsg(e)); }
+  renderFriends();
+});
+
+/* ---------- Einladen (QR) & Annehmen ---------- */
+let invTimer=null;
+async function openInvite(){
+  $('sheetI').hidden=false; $('qrBox').innerHTML=''; $('qrHint').textContent='Einladung wird erstellt …'; $('iShare').hidden=true;
+  try{
+    const n0=(await api('GET','friendships?select=user_a')).length;
+    const tok=String(await rpc('create_invite')), link=inviteLink(tok);
+    $('qrBox').innerHTML=qrSvg(link); $('iShare').hidden=false; $('iShare').dataset.link=link;
+    $('qrHint').textContent='Dein Freund scannt den Code mit der Kamera-App und nimmt die Einladung an. Der Code gilt 15 Minuten und nur einmal.';
+    clearInterval(invTimer); const t0=Date.now();
+    invTimer=setInterval(async()=>{
+      if(Date.now()-t0>15*60000 || $('sheetI').hidden){ clearInterval(invTimer); return; }
+      try{ const fs=await api('GET','friendships?select=user_a');
+        if(fs.length>n0){ clearInterval(invTimer); await refreshNet(); closeInvite(); toast('Neuer Freund verbunden 🎉'); renderFriends(); } }catch(e){}
+    },3000);
+  }catch(e){ $('qrHint').textContent=errMsg(e); }
+}
+function closeInvite(){ clearInterval(invTimer); $('sheetI').hidden=true; }
+$('iClose').onclick=closeInvite;
+$('sheetI').addEventListener('click',e=>{ if(e.target===$('sheetI')) closeInvite(); });
+$('iShare').onclick=async()=>{
+  const link=$('iShare').dataset.link; if(!link) return;
+  try{ if(navigator.share){ await navigator.share({title:'Whisky-Logbuch: Einladung',text:'Komm in mein Whisky-Logbuch:',url:link}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  toast(await copyText(link)?'Link kopiert':'Kopieren nicht möglich');
+};
+
+let aTok=null;
+function openAccept(tok){
+  aTok=tok||null;
+  $('aCode').hidden=!!tok; $('aCode').value=''; $('aCopy').hidden=!tok;
+  $('aHint').textContent=tok?'Du wirst mit der Person befreundet, die diese Einladung erstellt hat. Ihr seht dann gegenseitig, was ihr teilt.':'Füge den Einladungslink oder -code ein, den dein Freund dir geschickt hat.';
+  $('sheetA').hidden=false;
+}
+function closeA(){ $('sheetA').hidden=true; aTok=null; }
+$('aCancel').onclick=closeA;
+$('sheetA').addEventListener('click',e=>{ if(e.target===$('sheetA')) closeA(); });
+$('aCopy').onclick=async()=>{ toast(await copyText(inviteLink(aTok))?'Link kopiert':'Kopieren nicht möglich'); };
+$('aOk').onclick=async()=>{
+  const tok=aTok||parseInvite($('aCode').value);
+  if(!tok){ toast('Das ist kein gültiger Einladungscode'); return; }
+  $('aOk').disabled=true;
+  try{ await acceptInvite(tok); PENDING_INV=null; closeA(); if($('vFriends').classList.contains('active')) renderFriends(); }
+  catch(e){ toast(errMsg(e)); }
+  $('aOk').disabled=false;
+};
+function handleHash(){
+  const m=(location.hash||'').match(/invite=([0-9a-f]{32})/i); if(!m) return;
+  PENDING_INV=m[1].toLowerCase();
+  try{ history.replaceState({v:1},'',location.href.split('#')[0]); }catch(e){}
+  if(hasAcct()) openAccept(PENDING_INV); else openFriends();
+}
+
+/* ---------- Geteilten Whisky ansehen & vergleichen ---------- */
+let shCur=null, shFrom='friends';
+const tagsHTML=(a,map)=>a.length?`<div class="tags" style="margin-top:4px">${a.map(n=>{ const d=map.get(n); return `<span class="tag">${d&&d.emoji?esc(d.emoji)+' ':''}${esc(n)}</span>`; }).join('')}</div>`:'';
+function compareHTML(mine,theirs,fname){
+  const a=latestT(mine), b=latestOf(theirs), map=noteMap();
+  const col=(who,t)=>`<div class="cmpc"><b>${esc(who)}</b>${ratingHTML(t,16)}<div class="sub" style="margin-top:2px">${esc(fmtDate(t.date)||'ohne Datum')}</div></div>`;
+  let h=`<div class="tbox"><div class="cmpt">Vergleich mit deiner Verkostung</div><div class="cmp">${col('Du',a)}${col(fname,b)}</div>`;
+  TABS.forEach(x=>{
+    const p=a[x.notes]||[], q=b[x.notes]||[]; if(!p.length && !q.length) return;
+    const both=p.filter(n=>q.includes(n)), mo=p.filter(n=>!q.includes(n)), fo=q.filter(n=>!p.includes(n));
+    h+=`<div class="dl"><b>${x.label}</b>`
+      +(both.length?`<div class="cmpl">Gemeinsam</div>${tagsHTML(both,map)}`:'')
+      +(mo.length?`<div class="cmpl">Nur du</div>${tagsHTML(mo,map)}`:'')
+      +(fo.length?`<div class="cmpl">Nur ${esc(fname)}</div>${tagsHTML(fo,map)}`:'')+`</div>`;
+  });
+  return h+`</div>`;
+}
+function renderShared(row,tid){
+  shCur=row;
+  const d=row.d, list=sortedOf(d), t=(tid&&list.find(x=>x.id===tid))||list[0], map=noteMap();
+  const meta=[['Destillerie',d.distillery],['Region / Land',d.region],['Art',d.type],['Jahrgang',d.year],['Alter',d.age?d.age+' Jahre':''],['Alkohol',d.abv?fmt(d.abv)+' % vol.':'']].filter(m=>m[1]);
+  const mat=d.maturation.map(r=>{ const p=[r.cask,r.size].filter(Boolean).join(' · '); return r.type?(p?`${r.type}: ${p}`:r.type):p; }).filter(Boolean);
+  const sec=(h,v)=>v?`<div class="dl"><b>${h}</b><p>${esc(v)}</p></div>`:'';
+  const mine=entries.find(x=>mk(x.name)===row.match_key);
+  const chips=list.length>1?`<div class="dl"><b>Verkostungen (${list.length})</b><div class="chips">${list.map(x=>`<button type="button" class="chip ${x===t?'on':''}" data-stid="${esc(x.id)}">${esc(fmtDate(x.date)||'ohne Datum')}${x.rating>0?` · ${fmt(x.rating)}★`:''}${x.bonus?' ✦':''}</button>`).join('')}</div></div>`:'';
+  $('shared').innerHTML=`<h2>${esc(d.name)}</h2><div class="sub" style="margin-top:2px">geteilt von ${esc(row.name)}</div>
+    ${mine?compareHTML(mine,d,row.name):''}
+    <div class="meta">${meta.map(m=>`<div><small>${m[0]}</small>${esc(m[1])}</div>`).join('')}</div>
+    ${mat.length?sec('Reifung',mat.join('\n')):''}
+    ${chips}
+    <div class="tbox"><div class="cardtop"><div class="sub" style="font-size:14px">${t.date?'Verkostet am '+esc(fmtDate(t.date)):'Ohne Datum'}</div>${ratingHTML(t,22)}</div>
+      ${sec('Notiz zum Anlass',t.occasion)}${tabSections(t,map)}${sec('Gesamteindruck / Notizen',t.notes)}</div>`;
+}
+function openShared(id,from){
+  const r=NET.shared.find(x=>x.id===id); if(!r) return;
+  shFrom=from||'friends'; renderShared(r);
+  $('sharedCm').innerHTML=commentsShell(r.id,r.owner);
+  show('vShared'); loadComments($('sharedCm').querySelector('.cms'));
+}
+$('shared').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-stid]'); if(!b||!shCur) return;
+  const y=window.scrollY; renderShared(shCur,b.dataset.stid); window.scrollTo(0,y);
+});
+function sharedBack(){ if(shFrom==='detail' && detailId && entries.some(x=>x.id===detailId)) show('vDetail'); else openFriends(); }
+$('sBack').onclick=sharedBack;
+
+/* ---------- Kommentare ---------- */
+const commentsShell=(sid,owner)=>`<div class="sect" style="margin-top:20px">Kommentare</div><div class="cms" data-sid="${esc(sid)}" data-owner="${esc(owner)}"><div class="hint">Lade …</div></div>`;
+async function loadComments(box){
+  if(!box) return;
+  try{ drawComments(box,await api('GET','comments?select=id,author,author_name,body,created_at&shared_whisky_id=eq.'+encodeURIComponent(box.dataset.sid)+'&order=created_at.asc')); }
+  catch(e){ box.innerHTML=`<div class="hint">${esc(errMsg(e))}</div>`; }
+}
+function drawComments(box,rows){
+  const owner=box.dataset.owner;
+  box.innerHTML=(rows.length?rows.map(c=>`<div class="cm"><div class="cmh"><b>${esc(c.author===A.uid?'Du':(c.author_name||NET.names.get(c.author)||'Freund'))}</b><span class="sub">${esc(fmtDT(c.created_at))}</span>${(c.author===A.uid||owner===A.uid)?`<button type="button" class="ghost x" data-cmdel="${esc(c.id)}" aria-label="Kommentar löschen">✕</button>`:''}</div><p>${esc(c.body)}</p></div>`).join(''):'<div class="hint" style="margin-top:0">Noch keine Kommentare.</div>')
+    +`<textarea class="cmin" maxlength="1000" placeholder="Kommentar schreiben …" style="margin-top:10px"></textarea><button type="button" class="primary" data-cmsend="1" style="margin-top:8px;width:100%">Kommentar senden</button>`;
+}
+document.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-cmsend],[data-cmdel]'); if(!b) return;
+  const box=b.closest('.cms'); if(!box) return;
+  b.disabled=true;
+  try{
+    if(b.dataset.cmsend!==undefined){
+      const ta=box.querySelector('.cmin'), body=ta.value.trim();
+      if(!body){ toast('Bitte einen Kommentar schreiben'); b.disabled=false; return; }
+      await api('POST','comments',{shared_whisky_id:box.dataset.sid,author:A.uid,body},'return=minimal');
+      await loadComments(box); toast('Kommentar gesendet');
+    } else {
+      if(!confirm('Kommentar löschen?')){ b.disabled=false; return; }
+      await api('DELETE','comments?id=eq.'+encodeURIComponent(b.dataset.cmdel),undefined,'return=minimal');
+      await loadComments(box);
+    }
+  }catch(e){ toast(errMsg(e)); b.disabled=false; }
+});
+
+/* ---------- Detail meines Whiskys: Teilen, Vergleich, Kommentare ---------- */
+function shareStateText(e){
+  if(!e.shared) return 'Nicht geteilt – nur auf diesem Gerät.';
+  return (e.syncDirty||!e.remoteId) ? 'Wartet auf Synchronisierung …' : 'Deine Freunde sehen Bewertung, Noten und Texte.';
+}
+function renderSocial(){
+  const e=entries.find(x=>x.id===detailId), box=$('social'); if(!e){ box.innerHTML=''; return; }
+  if(!hasAcct()){
+    box.innerHTML=`<div class="tbox"><b style="font-size:15px">Mit Freunden teilen</b><div class="hint">Teile diesen Whisky mit deinen Freunden und vergleicht eure Bewertungen.</div><button type="button" id="gSetup" style="margin-top:8px">Freunde-Funktion einrichten</button></div>`;
+    return;
+  }
+  box.innerHTML=`<div class="tbox"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><b style="font-size:15px">Mit Freunden teilen</b><div class="hint" id="shareState" style="margin-top:2px">${esc(shareStateText(e))}</div></div><button type="button" class="switch ${e.shared?'on':''}" id="gShare" role="switch" aria-checked="${!!e.shared}" aria-label="Mit Freunden teilen"><i></i></button></div><div id="socCmp"></div><div id="socCm"></div></div>`;
+  if(e.shared && e.remoteId){ $('socCm').innerHTML=commentsShell(e.remoteId,A.uid); loadComments($('socCm').querySelector('.cms')); }
+  loadSocialCompare(e);
+}
+async function loadSocialCompare(e){
+  try{ if(!NET.at || Date.now()-NET.at>60000) await refreshNet(); }catch(er){ return; }
+  const box=$('socCmp'); if(!box || detailId!==e.id) return;
+  const m=NET.shared.filter(r=>r.match_key===mk(e.name));
+  box.innerHTML=m.length?`<div class="sect" style="margin-top:16px">Freunde mit diesem Whisky</div>`+m.map(r=>sharedCardHTML(r)).join('')+`<div class="hint" style="margin-top:-4px">Antippen zum Vergleichen und Kommentieren.</div>`:'';
+}
+async function toggleShare(){
+  const e=entries.find(x=>x.id===detailId); if(!e) return;
+  if(!e.shared){
+    e.shared=true; e.syncDirty=true; save(); renderSocial(); renderList();
+    await syncPending(); renderSocial();
+    if(e.syncDirty||!e.remoteId) toast('Wird synchronisiert, sobald du online bist');
+  } else {
+    if(!confirm('Freigabe beenden?\nDeine Freunde sehen den Whisky dann nicht mehr, und alle Kommentare dazu werden gelöscht.')) return;
+    try{
+      await api('DELETE','shared_whiskys?owner=eq.'+A.uid+'&local_id=eq.'+encodeURIComponent(e.id),undefined,'return=minimal');
+      e.shared=false; e.remoteId=''; e.syncDirty=false; save(); renderSocial(); renderList(); toast('Nicht mehr geteilt');
+    }catch(er){ toast(errMsg(er)); }
+  }
+}
+$('social').addEventListener('click',ev=>{
+  const b=ev.target.closest('button,[data-sid]'); if(!b) return;
+  if(b.id==='gShare'){ toggleShare(); return; }
+  if(b.id==='gSetup'){ openFriends(); return; }
+  if(b.dataset.sid){ openShared(b.dataset.sid,'detail'); }
+});
+window.addEventListener('online',()=>{ syncPending(); });
+
 /* Zurück-Taste (Android) */
 history.replaceState({v:1},'');
 window.addEventListener('popstate',()=>{
   history.pushState({v:1},'');
   if(!$('sheetT').hidden){ closeSheetT(); return; }
+  if(!$('sheetI').hidden){ closeInvite(); return; }
+  if(!$('sheetA').hidden){ closeA(); return; }
   if(!$('sheet').hidden){ closeSheet(); return; }
+  if($('vShared').classList.contains('active')){ sharedBack(); return; }
   if(!$('vList').classList.contains('active')){ show('vList'); renderList(); }
 });
 history.pushState({v:1},'');
@@ -984,6 +1596,8 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 }
 
 renderList();
+handleHash();
+setTimeout(syncPending,1500);
 })();
 </script>
 </body>

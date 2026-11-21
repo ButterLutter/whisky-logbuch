@@ -1,4 +1,4 @@
-const CACHE = 'whisky-logbuch-v7';
+const CACHE = 'whisky-logbuch-v8';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
@@ -19,6 +19,7 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  if (new URL(e.request.url).origin !== self.location.origin) return;   // Supabase & Co. nie aus dem Cache
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
       const copy = res.clone();
