@@ -1,4 +1,4 @@
-const CACHE = 'whisky-logbuch-v8';
+const CACHE = 'whisky-logbuch-v10';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'

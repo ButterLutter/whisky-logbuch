@@ -125,6 +125,12 @@ main{padding:12px 16px}
 .sect .opt{color:var(--muted);text-transform:none;letter-spacing:0;font-size:12px}
 .matrow{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:rgba(255,255,255,.015)}
 .matrow .row button{flex:none;padding:10px 14px}
+/* Sperrbildschirm */
+#lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+#lock[hidden]{display:none}
+#lock .lbox{width:100%;max-width:340px;text-align:center;display:flex;flex-direction:column;gap:12px}
+#lock img{display:block;margin:0 auto;border-radius:20px}
+body.locked>:not(#lock):not(.toast){display:none!important}
 /* Freunde, Teilen, Vergleich, Kommentare */
 .switch{width:52px;height:30px;border-radius:999px;padding:0;position:relative;flex:none;background:var(--card2)}
 .switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:left .15s}
@@ -149,7 +155,7 @@ main{padding:12px 16px}
 .code{font:700 19px/1.3 ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;background:var(--card2);border:1px dashed var(--amber);border-radius:10px;padding:12px;text-align:center;margin-top:8px;user-select:all}
 </style>
 </head>
-<body>
+<body class="locked">
 
 <!-- LISTE -->
 <div id="vList" class="view active">
@@ -301,6 +307,19 @@ main{padding:12px 16px}
     <button id="tCopy" class="primary">Noten der letzten Verkostung übernehmen</button>
     <button id="tEmpty">Ohne vorausgewählte Noten beginnen</button>
     <button id="tCancel" class="ghost">Abbrechen</button>
+  </div>
+</div>
+
+<!-- SPERRBILDSCHIRM -->
+<div id="lock" hidden>
+  <div class="lbox">
+    <img src="icon-192.png" alt="" width="84" height="84">
+    <h1 style="margin:0;font-size:22px">Whisky-Logbuch</h1>
+    <div class="hint" style="margin:0;line-height:1.5">Diese App ist privat. Gib bitte den Freischaltcode ein, den du persönlich bekommen hast.</div>
+    <input id="lockIn" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Freischaltcode" aria-label="Freischaltcode">
+    <label style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:14px;color:var(--muted)"><input type="checkbox" id="lockShow" style="width:auto;margin:0"> Code anzeigen</label>
+    <button id="lockOk" class="primary">Freischalten</button>
+    <div id="lockMsg" class="hint" style="margin:0;min-height:1.4em" role="status"></div>
   </div>
 </div>
 
@@ -1577,6 +1596,49 @@ $('social').addEventListener('click',ev=>{
 });
 window.addEventListener('online',()=>{ syncPending(); });
 
+/* ---------- Sperrbildschirm (Freischaltcode, einmal pro Gerät) ---------- */
+const UKEY='whisky-logbuch-unlock-v1';
+const LOCK_SALT='0a94709c80a8f9e06434a125f2099cd8';
+const LOCK_HASH='e0f69d7caac78c91c20d38b052b9c183ec5320a745552c5c322efa588d91b28e';
+const normLock=s=>String(s||'').normalize('NFC').toLowerCase().replace(/\s+/g,'');
+async function lockHash(code){
+  if(!(window.crypto && crypto.subtle)) throw new Error('nocrypto');
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(normLock(code)),'PBKDF2',false,['deriveBits']);
+  const salt=Uint8Array.from(LOCK_SALT.match(/../g),x=>parseInt(x,16));
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:200000},key,256);
+  return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');
+}
+function isUnlocked(){
+  try{ if(localStorage.getItem(UKEY)==='1') return true; }catch(e){}
+  // Geräte, die schon Einträge oder ein Konto haben, bleiben freigeschaltet
+  if(entries.length>0 || hasAcct()){ try{ localStorage.setItem(UKEY,'1'); }catch(e){} return true; }
+  return false;
+}
+function startApp(){
+  document.body.classList.remove('locked');
+  renderList(); handleHash(); setTimeout(syncPending,1500);
+}
+function showLock(){
+  const inp=$('lockIn'), btn=$('lockOk'), msg=$('lockMsg');
+  $('lock').hidden=false; inp.value='';
+  const go=async()=>{
+    if(!normLock(inp.value)) return;
+    btn.disabled=true; msg.textContent='Prüfe …';
+    try{
+      if(await lockHash(inp.value)===LOCK_HASH){
+        try{ localStorage.setItem(UKEY,'1'); }catch(e){}
+        inp.value=''; $('lock').hidden=true; startApp(); return;
+      }
+      msg.textContent='Der Code stimmt nicht.';
+    }catch(e){
+      msg.textContent=window.isSecureContext?'Der Code konnte nicht geprüft werden.':'Dieses Gerät kann den Code hier nicht prüfen (keine sichere Verbindung).';
+    }
+    btn.disabled=false; inp.focus(); inp.select();
+  };
+  btn.onclick=go; inp.onkeydown=e=>{ if(e.key==='Enter') go(); };
+  $('lockShow').onchange=e=>{ inp.type=e.target.checked?'text':'password'; };
+}
+
 /* Zurück-Taste (Android) */
 history.replaceState({v:1},'');
 window.addEventListener('popstate',()=>{
@@ -1595,9 +1657,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
-renderList();
-handleHash();
-setTimeout(syncPending,1500);
+if(isUnlocked()) startApp(); else showLock();
 })();
 </script>
 </body>
